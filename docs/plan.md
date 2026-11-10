@@ -56,9 +56,9 @@ The **data contract is the project's critical path**. Freeze it on Nov 20; from 
 | Backend / API / DB | WSA-1 | Schema, endpoints, auth, contract co-owner |
 | Frontend / UX | WSA-2 | Dashboard, search, assistant UI |
 | Integration / DevOps | WSA-3 | Docker, CI, deploy, mock→real swap |
-| Structured ETL + KPI | DA-1 | Clean data, KPI engine, contract co-owner |
-| NLP reviews/emails | DA-2 | Sentiment, topics, summarization, request classification |
-| Forecast + AI assistant | DA-3 | Demand forecast, pricing support, RAG assistant |
+| Structured ETL + KPI | DA-1 Daniele | Clean data, KPI engine, contract co-owner |
+| NLP reviews/emails | DA-2 Federico | Sentiment, topics, summarization, request classification |
+| Forecast + AI assistant | DA-3 Fabio | Demand forecast, pricing support, RAG assistant |
 | Client comms | Team Lead (rotating) | Weekly written status to client drive |
 
 ## Weekly rituals
