@@ -1,6 +1,6 @@
 # ADR 0002 — Architettura di persistenza dei dati
 
-- **Stato:** Proposto (in attesa di voto del team)
+- **Stato:** Accettato (voto del team 2026-11-11)
 - **Data:** 2026-11-06
 - **Decisori:** 3 Web Solutions Architect + 3 Data Analyst / AI Specialist
 - **Correlati:** `docs/plan.md`, `docs/adr/0001-tech-stack.md`, `docs/project-bearings.pdf`
@@ -83,13 +83,13 @@ Se il team desidera una separazione fisica più marcata, l'**Opzione C** è la v
 
 ## Decisione
 
-> **Da completare con il voto del team il ______.**
+> **Deciso dal team il 2026-11-11.**
 >
-> Opzione scelta: ______
+> Opzione scelta: **A — Solo PostgreSQL, con due zone logiche**
 >
-> Voti: WSA ___ / Data ___
+> Voti: WSA 3 / Data 3 (unanime)
 >
-> Dissenso / condizioni: ______
+> Dissenso / condizioni: nessuno
 
 ## Conseguenze
 

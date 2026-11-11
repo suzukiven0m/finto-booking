@@ -1,3 +1,5 @@
 project-bearings.*
 project-info/*
 .directory
+mock-db/*
+personal-notes/

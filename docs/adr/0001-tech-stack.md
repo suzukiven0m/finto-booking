@@ -1,6 +1,6 @@
 # ADR 0001 — Stack dell'applicazione web
 
-- **Stato:** Proposto (in attesa di voto del team)
+- **Stato:** Accettato (voto del team 2026-11-11)
 - **Data:** 2026-11-06
 - **Decisori:** 3 Web Solutions Architect + 3 Data Analyst / AI Specialist
 - **Correlati:** `docs/plan.md`, `docs/project-bearings.pdf`
@@ -71,13 +71,13 @@ Compromesso accettato: i WSA scrivono Python sul backend invece di TypeScript. M
 
 ## Decisione
 
-> **Da completare con il voto del team il ______.**
+> **Deciso dal team il 2026-11-11.**
 >
-> Opzione scelta: ______
+> Opzione scelta: **A — FastAPI + React (SPA TypeScript)**
 >
-> Voti: WSA ___ / Data ___
+> Voti: WSA 3 / Data 3 (unanime)
 >
-> Dissenso / condizioni: ______
+> Dissenso / condizioni: nessuno
 
 ## Conseguenze
 

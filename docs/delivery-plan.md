@@ -10,7 +10,7 @@
 
 ## 0. Verdict — read this first
 
-The project is **behind its own Sprint 0 exit criteria, which are due tomorrow.** Repo is docs-only: zero source files. Both ADRs are unvoted. Meanwhile the dataset cannot satisfy two mandatory deliverables.
+The project is **behind its own Sprint 0 exit criteria, which are due tomorrow.** Repo is docs-only: zero source files. ADRs 0001 and 0002 accepted 2026-11-11; **ADR 0003 still unvoted.** Meanwhile the dataset cannot satisfy two mandatory deliverables.
 
 Three facts, all computed from the raw CSV:
 
@@ -66,8 +66,8 @@ The auditor showed the same metric swings 10-40% on definition alone. Every head
 
 | # | Action | Owner | Done when |
 |---|---|---|---|
-| B1 | **Vote ADR 0001.** Fill the decision block. Default: Option A (FastAPI + React). | All 6 | File says "Accettato", not "Proposto" |
-| B2 | **Vote ADR 0002.** Default: Option A (Postgres only). | All 6 | Same |
+| B1 | **Vote ADR 0001.** ✅ **Done 2026-11-11: Option A (FastAPI + React), 6/6.** | All 6 | ADR 0001 says "Accettato" |
+| B2 | **Vote ADR 0002.** ✅ **Done 2026-11-11: Option A (Postgres only), 6/6.** | All 6 | ADR 0002 says "Accettato" |
 | B3 | **Decide the reviews/text gap.** Options below. | Team lead | Decision recorded in ADR 0003 |
 | B4 | **Confirm data request was sent to client in writing.** | Team lead | Copy in `docs/` or client drive |
 | B5 | Scaffold monorepo skeleton + `docker-compose` up. | WSA-3 | `docker compose up` gives a reachable Postgres |
