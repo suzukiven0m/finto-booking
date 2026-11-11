@@ -3,3 +3,10 @@ project-info/*
 .directory
 mock-db/*
 personal-notes/
+
+# Datasets: full files live on the client drive, only the trimmed sample is committed
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/sample_*.csv
+
+.env
