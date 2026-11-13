@@ -104,5 +104,6 @@ erDiagram
 | `kpi_daily` | `UNIQUE (property_id, date)` | una sola riga per hotel e giorno |
 
 **Nessuna FK verso `bookings` da `reviews`.** ADR 0003 §3: il legame è per
-proprietà, asserito, non per prenotazione. Il `CHECK` di `kpi_daily` è
-`UNIQUE`, non `CHECK`: la riga sopra è l'unica eccezione di nomenclatura.
+proprietà, asserito, non per prenotazione. Il vincolo su `kpi_daily` è un
+`UNIQUE`, non un `CHECK`: impone una riga sola per hotel e giorno, non valida i
+valori.

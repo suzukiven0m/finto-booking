@@ -66,8 +66,9 @@ jobs:
 
       - name: Downgrade one step
         # "downgrade base" droppa la tabella in 0002, quindi non prova che 0003
-        # ripristini lo stato di 0002. Qui si controlla davvero: score deve
-        # tornare NOT NULL, altrimenti il downgrade non e' un inverso fedele.
+        # ripristini lo stato di 0002. Qui si controlla davvero: le tre colonne
+        # che 0002 aveva NOT NULL devono tornare NOT NULL, altrimenti il
+        # downgrade non e' un inverso fedele.
         working-directory: backend
         run: |
           alembic downgrade 0002
@@ -75,9 +76,9 @@ jobs:
           import sqlalchemy as sa
           import app.config as cfg
           e = sa.create_engine(cfg.DATABASE_URL)
-          cols = sa.inspect(e).get_columns("reviews")
-          col = [c for c in cols if c["name"] == "score"][0]
-          assert col["nullable"] is False, col
-          print("reviews.score NOT NULL: ok")
+          cols = {c["name"]: c for c in sa.inspect(e).get_columns("reviews")}
+          for nome in ("score", "text", "language"):
+              assert cols[nome]["nullable"] is False, cols[nome]
+          print("reviews score/text/language NOT NULL: ok")
           PY
           alembic upgrade head

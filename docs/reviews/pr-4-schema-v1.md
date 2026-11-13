@@ -10,6 +10,12 @@
 | Baseline | ADR 0001, ADR 0002, **ADR 0003 (accettato 2026-11-13, opzione E)**, `docs/plan.md`, `docs/delivery-plan.md`, brief |
 | Verdetto | **Request changes** — 3 bloccanti, 6 da sistemare, 6 opzionali |
 
+> **Stato al 2026-11-13 (dopo il merge di #4).** La PR è stata mergiata così com'era.
+> Il seguito dei B-/T- è stato fatto sul branch `plumbing`: migrazione `0003`, ERD,
+> dizionario dei dati, test, CI, dipendenze fissate. Dettaglio e verifica eseguita:
+> `docs/reviews/plumbing-review.md`. Le righe della tabella §6 restano com'erano
+> perché descrivono la PR al momento della review, non il branch successivo.
+
 ## 0. Verdetto
 
 Il lavoro è **solido e funziona davvero**: le migrazioni salgono e scendono pulite, i modelli sono allineati alle migrazioni (`alembic check` non trova niente), i test passano, il SQL offline è valido. Su Alembic non c'è niente da correggere.
