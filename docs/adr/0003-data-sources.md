@@ -1,9 +1,9 @@
 # ADR 0003 — Sorgenti dati per recensioni e testi
 
-- **Stato:** Proposto (in attesa di voto del team)
+- **Stato:** Accettato (voto del team 2026-11-13)
 - **Data:** 2026-11-09
 - **Decisori:** 3 Web Solutions Architect + 3 Data Analyst / AI Specialist
-- **Scadenza decisione:** 2026-11-20 (SAL 1) — lo schema si congela
+- **Scadenza decisione:** 2026-11-20 (SAL 1) — lo schema si congela. Rispettata: decisa il 2026-11-13.
 - **Correlati:** `docs/plan.md`, `docs/delivery-plan.md`, `docs/adr/0001-tech-stack.md`, `docs/adr/0002-data-storage.md`
 
 ## Contesto
@@ -120,13 +120,13 @@ Presentare il join come se fosse fattuale è l'unico modo per rendere questa opz
 
 ## Decisione
 
-> **Da completare con il voto del team il ______.**
+> **Deciso dal team il 2026-11-13.**
 >
-> Opzione scelta: ______
+> Opzione scelta: **E — `hotel_bookings.csv` + TripAdvisor**
 >
-> Voti: WSA ___ / Data ___
+> Voti: WSA 3 / Data 3 (unanime)
 >
-> Dissenso / condizioni: ______
+> Dissenso / condizioni: nessuno. Restano vincolanti le condizioni del §"Punto debole": il legame prenotazione ↔ recensione è asserito e va dichiarato nel data dictionary e al SAL 1.
 
 ## Conseguenze
 
@@ -145,12 +145,12 @@ Presentare il join come se fosse fattuale è l'unico modo per rendere questa opz
 
 **Seguito**
 
-- Se si sceglie B o D, registrare in un ADR successivo la perdita del punteggio per dimensione e come viene coperta.
+- Lo schema `reviews` va allineato alla §3 (niente FK verso `bookings`, più `ta_hotel_id`, `post_date`, `overall` e le cinque dimensioni) e `properties` deve avere `ta_hotel_id`. La migrazione già mergiata in PR #4 è nella forma sintetica: va corretta prima del freeze del 20 nov.
 - Se il cliente consegna recensioni reali, aprire un ADR di sostituzione prima di integrarle.
 
 ---
 
-## Come procedere (se viene scelta E)
+## Come procedere
 
 Sette passi, in ordine di dipendenza. Giorni lavorativi, weekend esclusi.
 
