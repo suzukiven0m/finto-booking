@@ -29,8 +29,9 @@ Connection string: `postgresql://buby:buby@localhost:5432/buby`
 Override user, password, database or host port by copying `.env.example` to `.env`.
 
 Il backend legge `DATABASE_URL`; se non è impostata, la costruisce dalle stesse
-variabili `POSTGRES_*` del compose, così cambiare porta o credenziali nel `.env`
-sposta anche l'app. `DATABASE_URL` vince se la scrivi esplicitamente.
+variabili `POSTGRES_*` del compose. Attenzione: `docker compose` legge il `.env`,
+il backend legge l'ambiente del processo. Per allinearli esporta le stesse
+variabili (o scrivi `DATABASE_URL`) prima di lanciare il backend fuori da compose.
 
 Stop it with `docker compose -f infra/docker-compose.yml down`.
 Add `-v` only when you mean to delete the database volume.

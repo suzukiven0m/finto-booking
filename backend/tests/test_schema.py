@@ -113,7 +113,7 @@ def test_ogni_foreign_key_ha_un_indice(conn):
 @pytest.mark.parametrize(
     "tabella, valori",
     [
-        # i CHECK sono nella 0001/0002: qui proviamo che rifiutino davvero.
+        # i CHECK li crea la 0003: qui proviamo che rifiutino davvero.
         # room_count c'e' perche' e' NOT NULL: senza, l'errore sarebbe il NOT NULL
         # e non il CHECK che vogliamo testare.
         (
