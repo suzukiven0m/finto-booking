@@ -113,8 +113,18 @@ def test_ogni_foreign_key_ha_un_indice(conn):
 @pytest.mark.parametrize(
     "tabella, valori",
     [
-        # i CHECK sono nella 0001/0002: qui proviamo che rifiutino davvero
-        (Property, {"name": "X", "hotel_type": "City Hotel", "location_type": "deserto"}),
+        # i CHECK sono nella 0001/0002: qui proviamo che rifiutino davvero.
+        # room_count c'e' perche' e' NOT NULL: senza, l'errore sarebbe il NOT NULL
+        # e non il CHECK che vogliamo testare.
+        (
+            Property,
+            {
+                "name": "X",
+                "hotel_type": "City Hotel",
+                "location_type": "deserto",
+                "room_count": 10,
+            },
+        ),
         (
             GuestRequest,
             {"property_id": 1, "received_at": datetime.now(UTC), "body": "x", "status": "boh"},

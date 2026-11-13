@@ -28,6 +28,10 @@ docker exec -it buby-postgres psql -U buby -d buby -c 'select version();'
 Connection string: `postgresql://buby:buby@localhost:5432/buby`
 Override user, password, database or host port by copying `.env.example` to `.env`.
 
+Il backend legge `DATABASE_URL`; se non è impostata, la costruisce dalle stesse
+variabili `POSTGRES_*` del compose, così cambiare porta o credenziali nel `.env`
+sposta anche l'app. `DATABASE_URL` vince se la scrivi esplicitamente.
+
 Stop it with `docker compose -f infra/docker-compose.yml down`.
 Add `-v` only when you mean to delete the database volume.
 

@@ -88,8 +88,14 @@ def downgrade() -> None:
         "reviews", "lang", type_=sa.String(5), existing_type=sa.String(20), nullable=False
     )
     op.alter_column("reviews", "body", existing_type=sa.Text(), nullable=False)
+    # nullable=False perche' 0002 aveva creato score NOT NULL: senza questo
+    # il downgrade non torna allo stato di partenza
     op.alter_column(
-        "reviews", "overall", type_=sa.Numeric(4, 2), existing_type=sa.Numeric(3, 1)
+        "reviews",
+        "overall",
+        type_=sa.Numeric(4, 2),
+        existing_type=sa.Numeric(3, 1),
+        nullable=False,
     )
 
     for dim in reversed(DIMENSIONS):

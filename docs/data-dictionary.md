@@ -129,7 +129,7 @@ in una tabella derivata, così un re-run non deve fare `UPDATE` sulla sorgente.
 | Campo | Tipo | Null | Regola |
 |---|---|---|---|
 | `id` | serial PK | no | |
-| `property_id` | integer FK | no | proprietà mappata |
+| `property_id` | integer FK | no | proprietà mappata. ADR §3 non mette NOT NULL; qui è obbligatorio perché una recensione senza proprietà non è collegabile a nessun KPI |
 | `ta_hotel_id` | bigint | no | denormalizzato: traccia da quale hotel TripAdvisor arriva la riga |
 | `post_date` | date | no | da `post_date` del corpus, non da `stay_year` |
 | `stay_year` | integer | sì | solo l'anno: non basta per il trend mensile |
@@ -137,7 +137,7 @@ in una tabella derivata, così un re-run non deve fare `UPDATE` sulla sorgente.
 | `cleanliness`, `value`, `location`, `rooms`, `sleep_quality` | numeric(3,1) | sì | le cinque dimensioni, reali dal corpus |
 | `title` | text | sì | |
 | `body` | text | sì | testo della recensione: input dell'NLP |
-| `lang` | varchar(20) | sì | |
+| `lang` | varchar(20) | sì | ADR §3 dice `TEXT`; qui è `varchar(20)` perché i valori del corpus sono etichette `__label__xx` (max 12 caratteri). Se arriva un corpus con codici più lunghi, va allargato con una migrazione |
 
 ### `guest_requests` — email generate (DA-3)
 
