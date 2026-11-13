@@ -1,0 +1,17 @@
+# Config unica per ruff e isort: due default diversi sullo stesso file
+# producevano due verdetti diversi. `app` e' il package locale del backend.
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+known-third-party = ["alembic", "psycopg", "pytest", "sqlalchemy"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+known_first_party = ["app"]
+known_third_party = ["alembic", "psycopg", "pytest", "sqlalchemy"]

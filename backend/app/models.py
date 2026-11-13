@@ -1,7 +1,8 @@
 # se cambi qualcosa qui ricordati di fare una nuova migrazione con alembic
 from sqlalchemy import (
-    ARRAY,
+    BigInteger,
     Boolean,
+    CheckConstraint,
     Column,
     Computed,
     Date,
@@ -20,15 +21,25 @@ from app.database import Base
 
 class Property(Base):
     __tablename__ = "properties"
+    __table_args__ = (
+        UniqueConstraint("ta_hotel_id", name="uq_properties_ta_hotel_id"),
+        CheckConstraint(
+            "location_type IN ('lake', 'mountain')", name="ck_properties_location_type"
+        ),
+    )
 
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False, unique=True)
     # e' il valore della colonna hotel del csv (Resort Hotel / City Hotel),
-    # serve per collegare le prenotazioni all'hotel giusto
-    hotel_type = Column(String(50), nullable=False, unique=True)
+    # serve per collegare le prenotazioni all'hotel giusto.
+    # Non e' unique: due strutture possono essere entrambe "City Hotel".
+    hotel_type = Column(String(50), nullable=False)
     location_type = Column(String(20), nullable=False)  # lake o mountain
     # nel csv le camere non ci sono, 190 e 230 li abbiamo ipotizzati noi
     room_count = Column(Integer, nullable=False)
+    # hotel TripAdvisor scelto per questa struttura (ADR 0003 §1): quello con
+    # piu' recensioni. Si sceglie una volta e non si cambia dopo il SAL 1.
+    ta_hotel_id = Column(BigInteger)
 
 
 class Booking(Base):
@@ -46,7 +57,9 @@ class Booking(Base):
     stays_in_weekend_nights = Column(Integer, nullable=False)
     stays_in_week_nights = Column(Integer, nullable=False)
     # la calcola postgres da solo, non va scritta quando si caricano i dati
-    nights = Column(Integer, Computed("stays_in_weekend_nights + stays_in_week_nights", persisted=True))
+    nights = Column(
+        Integer, Computed("stays_in_weekend_nights + stays_in_week_nights", persisted=True)
+    )
 
     adults = Column(Integer, nullable=False)
     children = Column(Integer, nullable=False, server_default="0")  # nel csv ci sono 4 NA
@@ -77,27 +90,43 @@ class Booking(Base):
 
 
 class Review(Base):
-    # recensioni generate (non ci sono nel csv)
+    # recensioni dal corpus TripAdvisor (ADR 0003 §3, opzione E).
+    # Nessuna FK verso bookings: il legame e' a livello di proprieta', asserito.
     __tablename__ = "reviews"
+    __table_args__ = (Index("ix_reviews_property_post_date", "property_id", "post_date"),)
 
     id = Column(Integer, primary_key=True)
     property_id = Column(Integer, ForeignKey("properties.id"), nullable=False)
-    booking_id = Column(Integer, ForeignKey("bookings.id"))
+    # denormalizzato apposta: traccia da quale hotel TripAdvisor arriva la riga
+    ta_hotel_id = Column(BigInteger, nullable=False)
 
-    date = Column(Date, nullable=False)
-    score = Column(Numeric(4, 2), nullable=False)  # voto 1-10
-    text = Column(Text, nullable=False)
-    language = Column(String(5), nullable=False)  # it, en, ...
-    reviewer_nationality = Column(String(3))  # tipo ITA, PRT come country
+    post_date = Column(Date, nullable=False)  # da post_date, non da stay_year
+    stay_year = Column(Integer)  # solo l'anno: non basta per il trend mensile
 
-    # queste le riempie il modello di sentiment, all'inizio sono vuote
-    sentiment = Column(String(10))  # positive, neutral, negative
-    topics = Column(ARRAY(Text))
+    # voti 1-5 con un decimale, presi dal corpus
+    overall = Column(Numeric(3, 1))
+    cleanliness = Column(Numeric(3, 1))
+    value = Column(Numeric(3, 1))
+    location = Column(Numeric(3, 1))
+    rooms = Column(Numeric(3, 1))
+    sleep_quality = Column(Numeric(3, 1))
+
+    title = Column(Text)
+    body = Column(Text)
+    lang = Column(String(20))
+
+    # sentiment e topics NON stanno qui: sono output del modello (D14), non dati
+    # di TripAdvisor. Vanno in una tabella derivata, cosi' un re-run del modello
+    # non deve fare UPDATE sulla tabella sorgente.
 
 
 class GuestRequest(Base):
     # email degli ospiti (generate), per la pagina messaggi
     __tablename__ = "guest_requests"
+    __table_args__ = (
+        Index("ix_guest_requests_property_id", "property_id"),
+        CheckConstraint("status IN ('new', 'draft', 'sent')", name="ck_guest_requests_status"),
+    )
 
     id = Column(Integer, primary_key=True)
     property_id = Column(Integer, ForeignKey("properties.id"), nullable=False)
@@ -122,7 +151,7 @@ class KpiDaily(Base):
 
     room_nights = Column(Integer, nullable=False)
     revenue = Column(Numeric(10, 2), nullable=False)
-    # room_nights / room_count * 100 (da sentire con Daniele se va in % o 0-1)
+    # room_nights / room_count: rapporto 0-1, senza x100 (delivery-plan §6)
     occupancy = Column(Numeric(5, 2), nullable=False)
     # revenue / room_nights, vuoto se quel giorno non c'era nessuno
     adr = Column(Numeric(8, 2))

@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [master, plumbing]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: buby
+          POSTGRES_PASSWORD: buby
+          POSTGRES_DB: buby
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      # stesso schema del docker-compose: il DB e' il service qui sopra
+      DATABASE_URL: postgresql+psycopg://buby:buby@localhost:5432/buby
+      # con CI impostata il conftest fallisce invece di saltare i test
+      CI: "true"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        # lint pinnato: senza pin un rilascio di ruff rompe la CI
+        run: pip install -r backend/requirements.txt ruff==0.17.5 isort==9.0.2
+
+      - name: Lint
+        run: |
+          ruff check backend/
+          isort --check-only backend/
+
+      - name: Migrations up
+        working-directory: backend
+        run: alembic upgrade head
+
+      - name: Models == migrations
+        working-directory: backend
+        run: alembic check
+
+      - name: Schema tests
+        working-directory: backend
+        run: pytest -q
+
+      - name: Round-trip
+        working-directory: backend
+        run: |
+          alembic downgrade base
+          alembic upgrade head
+
+      - name: Downgrade one step
+        # "downgrade base" droppa la tabella in 0002, quindi non prova che 0003
+        # ripristini lo stato di 0002. Qui si controlla davvero: le tre colonne
+        # che 0002 aveva NOT NULL devono tornare NOT NULL, altrimenti il
+        # downgrade non e' un inverso fedele.
+        working-directory: backend
+        run: |
+          alembic downgrade 0002
+          python - <<'PY'
+          import sqlalchemy as sa
+          import app.config as cfg
+          e = sa.create_engine(cfg.DATABASE_URL)
+          cols = {c["name"]: c for c in sa.inspect(e).get_columns("reviews")}
+          for nome in ("score", "text", "language"):
+              assert cols[nome]["nullable"] is False, cols[nome]
+          print("reviews score/text/language NOT NULL: ok")
+          PY
+          alembic upgrade head

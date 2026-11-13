@@ -10,8 +10,9 @@ finto-booking/
 ├── backend/     FastAPI app        (WSA-1)
 ├── frontend/    React + Vite       (WSA-2)
 ├── data/        ETL, generators    (DA-1, DA-2, DA-3)
-├── infra/       docker-compose, Dockerfiles, CI   (WSA-3)
+├── infra/       docker-compose            (WSA-3)
 └── docs/        plan, ADRs, contract, data dictionary
+   .github/      CI workflows             (WSA-3)
 ```
 
 ## Run it locally
@@ -26,7 +27,14 @@ docker exec -it buby-postgres psql -U buby -d buby -c 'select version();'
 ```
 
 Connection string: `postgresql://buby:buby@localhost:5432/buby`
-Override user, password, database or host port by copying `.env.example` to `.env`.
+Override user, password, database or host port by copying `.env.example` to `.env`
+(docker compose reads it; the backend does not).
+
+Il backend legge `DATABASE_URL`; se non è impostata, la costruisce dalle stesse
+variabili `POSTGRES_*` del compose. Attenzione: `docker compose` legge il `.env`,
+il backend legge l'ambiente del processo. Per allinearli esporta le stesse
+variabili nell'ambiente (o `DATABASE_URL`) quando lanci il backend come processo
+locale.
 
 Stop it with `docker compose -f infra/docker-compose.yml down`.
 Add `-v` only when you mean to delete the database volume.

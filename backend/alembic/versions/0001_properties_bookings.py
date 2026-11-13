@@ -67,8 +67,18 @@ def upgrade() -> None:
     op.bulk_insert(
         properties,
         [
-            {"name": "Buby Lago", "hotel_type": "Resort Hotel", "location_type": "lake", "room_count": 190},
-            {"name": "Buby Montagna", "hotel_type": "City Hotel", "location_type": "mountain", "room_count": 230},
+            {
+                "name": "Buby Lago",
+                "hotel_type": "Resort Hotel",
+                "location_type": "lake",
+                "room_count": 190,
+            },
+            {
+                "name": "Buby Montagna",
+                "hotel_type": "City Hotel",
+                "location_type": "mountain",
+                "room_count": 230,
+            },
         ],
     )
 

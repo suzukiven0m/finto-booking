@@ -10,7 +10,7 @@
 
 ## 0. Verdict — read this first
 
-The project is **behind its own Sprint 0 exit criteria, which are due tomorrow.** Repo is docs-only: zero source files. ADRs 0001 and 0002 accepted 2026-11-11; **ADR 0003 still unvoted.** Meanwhile the dataset cannot satisfy two mandatory deliverables.
+The project is **behind its own Sprint 0 exit criteria, which are due tomorrow.** Repo is docs-only: zero source files. ADRs 0001, 0002 and 0003 all accepted (0001/0002 on 2026-11-11, 0003 on 2026-11-13). Meanwhile the dataset cannot satisfy two mandatory deliverables.
 
 Three facts, all computed from the raw CSV:
 
@@ -68,50 +68,45 @@ The auditor showed the same metric swings 10-40% on definition alone. Every head
 |---|---|---|---|
 | B1 | **Vote ADR 0001.** ✅ **Done 2026-11-11: Option A (FastAPI + React), 6/6.** | All 6 | ADR 0001 says "Accettato" |
 | B2 | **Vote ADR 0002.** ✅ **Done 2026-11-11: Option A (Postgres only), 6/6.** | All 6 | ADR 0002 says "Accettato" |
-| B3 | **Decide the reviews/text gap.** Options below. | Team lead | Decision recorded in ADR 0003 |
+| B3 | **Decide the reviews/text gap.** ✅ **Done 2026-11-13: ADR 0003 option E (`hotel_bookings.csv` + TripAdvisor), 6/6.** | All 6 | ADR 0003 says "Accettato" |
 | B4 | **Confirm data request was sent to client in writing.** | Team lead | Copy in `docs/` or client drive |
 | B5 | Scaffold monorepo skeleton + `docker-compose` up. | WSA-3 | `docker compose up` gives a reachable Postgres |
 | B6 | **Commit the dataset to `data/raw/`.** It exists only on `origin/fabio`, not on master. | DA-1 | `Datasets/hotel_bookings.csv` on master; nobody can seed without it |
 
-### B3 — the reviews/text decision
+### B3 — the reviews/text decision ✅ **Decided 2026-11-13: option E**
 
 | Option | Effort | Risk | Verdict |
 |---|---|---|---|
 | A. Ask client for real reviews + emails | 0 dev, unknown latency | Data may not exist | **Do this anyway, day 1** |
-| B. Generate synthetic corpus linked to bookings | ~1 day (DA-2) | Must be declared as synthetic | **Do this now, in parallel** |
+| B. Generate synthetic corpus linked to bookings | ~1 day (DA-2) | Must be declared as synthetic | **Rejected for reviews** — kept for emails only |
 | C. Drop reputation + NLP from scope | 0 | Fails a mandatory brief deliverable | **Reject** |
+| E. `hotel_bookings.csv` + TripAdvisor | ~2 days (DA-2) | Property-level link is asserted, not factual | **Accepted, 6/6** |
 
-**Take A and B together.** Generate synthetic data now so the pipeline is real; swap to client data at Sprint 3 if it arrives. If it never arrives, the demo runs on synthetic data and the report states so plainly. Option C fails the brief.
+**Decision: option E.** Bookings come from `hotel_bookings.csv`; reviews and text come from the TripAdvisor corpus (`jniimi/tripadvisor-review-rating`). Both real. The per-dimension score the brief requires exists natively in that corpus, so nothing is synthesised. Full rationale, weighted scoring and the seven-step plan: `docs/adr/0003-data-sources.md`.
 
-**Why B is defensible.** The brief contrasts mock fixtures against a real pipeline, not client data against generated data (line 106): *"i WSA sviluppano con dati di prova (mock), mentre i Data Analyst preparano i dati reali"*. The requirement is "dati reali preparati dal team dati" — data the team prepared, not data the client handed over. A generator producing a corpus that is then cleaned, loaded and served through the real pipeline meets that reading. What it does **not** license is presenting generated data as client data. Disclosure at SAL 1 is mandatory.
+**The link is asserted, not factual.** A 2012 TripAdvisor reviewer is not the guest of a 2016 booking. Binding on the data dictionary and the SAL 1 slide:
 
-Corpus shape (DA-2, ~1 day):
+- occupancy and revenue KPIs come **only** from `hotel_bookings.csv`;
+- reputation KPIs come **only** from TripAdvisor;
+- no joint analysis at the individual-booking level is legitimate;
+- joint analysis at **property and month** level is legitimate, with the assumption stated.
 
-| Corpus | Rows | Shape |
-|---|---:|---|
-| Reviews | 20,000 | Linked to real checked-out bookings (31.6% response rate — realistic). Fields: `booking_id`, `score` 1-10, `text` 40-400 chars, `language`, `date` |
-| Emails | 800 | 6 categories: `availability`, `cancellation`, `complaint`, `special_request`, `billing`, `info`. Fields: `body`, `category`, `draft_reply`, `status` |
+Presenting the join as factual is the one way to make this option indefensible.
 
-Reviews must be generated from a template + slot-filling, not an LLM, so the sentiment ground truth is exact and model evaluation is honest. If an LLM writes them, the evaluator measures agreement with the same model — worthless.
+**Emails stay synthetic.** No public source provides guest emails, so option B survives for that corpus only (DA-3, 800 rows, 6 categories).
 
-**Correlate the score with real booking columns.** The brief asks which factors influence satisfaction. If reviews are random, that analysis is noise and collapses under a single question at the demo. Derive a latent score from fields that actually exist:
+Corpus shape:
 
-```
-score = 7.5
-      + 0.35 * total_of_special_requests
-      + 0.30 * (booking_changes > 0)
-      + 0.50 * is_repeated_guest
-      + 0.30 * (required_car_parking_spaces > 0)
-      - 1.00 * (previous_cancellations > 0)
-      - 0.80 * (adr > p90_adr_of_property)
-      - 0.40 * (lead_time > 180)
-      + N(0, 1.1)                      # seed 42, reproducible
-clamp to [1.0, 10.0], 1 decimal
-```
+| Corpus | Rows | Source | Shape |
+|---|---:|---|---|
+| Reviews | 20,000 | TripAdvisor, `lang == "__label__en"`, balanced by `hotel_id`, `random_state=42` | `ta_hotel_id`, `post_date`, `stay_year`, `overall`, `cleanliness`, `value`, `location`, `rooms`, `sleep_quality`, `title`, `body`, `lang` |
+| Emails | 800 | synthetic (DA-3) | 6 categories: `availability`, `cancellation`, `complaint`, `special_request`, `billing`, `info`. Fields: `body`, `category`, `draft_reply`, `status` |
 
-Topic presence follows the score bucket: low → `cleanliness`, `noise`, `room_condition`; high → `staff`, `location`, `breakfast`. Then the driver analysis has a real signal to find, and the answer is checkable against the generator.
+Reviews are sampled to `data/raw/tripadvisor_sample.csv` (~3 MB) and **that** is committed; the 952 MB pickle is not. Loader: `docs/adr/0003-data-sources.md` §2.
 
-**Anti-leakage rule:** `true_sentiment`, `true_topics`, `true_category`, `true_urgency` live only in `data/eval/*_gold.csv`. They are never written to the database and never read by the pipeline. DA-2 scores predictions against the gold file. Leaking them into the DB turns a real evaluation into a tautology.
+**Anti-leakage rule (emails only):** `true_category` and `true_urgency` live only in `data/eval/email_gold.csv`. They are never written to the database and never read by the pipeline. DA-3 scores predictions against the gold file. Leaking them into the DB turns a real evaluation into a tautology.
+
+**Review evaluation is honest by construction.** The five dimensions and `overall` are real guest scores, not model output, so they work as weak labels: correlate predicted sentiment against the real score. No generator to defend.
 
 ---
 
@@ -128,8 +123,8 @@ Each is a thing a student codes, not a theme.
 | D5 | OpenAPI v1 spec (`openapi.yaml`) | WSA-1 + DA-1 | Nov 16 |
 | D6 | Mock server from spec | WSA-3 | Nov 17 |
 | D7 | KPI engine (occupancy, ADR, RevPAR, channels, seasonality) | DA-1 | Nov 18 |
-| D8 | Synthetic review corpus generator | DA-2 | Nov 17 |
-| D9 | Synthetic guest-email corpus generator | DA-2 | Nov 17 |
+| D8 | TripAdvisor review sample + loader (20k rows) | DA-2 | Nov 17 |
+| D9 | Synthetic guest-email corpus generator | DA-3 | Nov 17 |
 | D10 | Dashboard shell (React) consuming the mock | WSA-2 | Nov 18 |
 | D11 | Auth: JWT login, 3 roles | WSA-1 | Nov 27 |
 | D12 | KPI API endpoints on real data | WSA-1 | Dec 2 |
@@ -183,8 +178,8 @@ Everything here exists to make Nov 20 defensible. Ten items in nine days means t
 | Wed 11 | D2 schema v1 + ERD | WSA-1 | `alembic upgrade head` creates all tables |
 | Thu 12 | D3 ETL v0 | DA-1 | 87,396 rows loaded, duplicates gone |
 | Fri 13 | D4 seed + **status to client** | DA-1 | Baseline numbers reproduced exactly |
-| Mon 16 | D5 OpenAPI v1 + D8/D9 corpora start | WSA-1 + DA-1, DA-2 | Spec validates; generators sketched |
-| Tue 17 | D6 mock server + D8/D9 corpora finish | WSA-3, DA-2 | `GET /api/kpis/*` returns fixtures; 20k reviews, 800 emails |
+| Mon 16 | D5 OpenAPI v1 + D8/D9 corpora start | WSA-1 + DA-1, DA-2 | Spec validates; TripAdvisor sample downloaded, email generator sketched |
+| Tue 17 | D6 mock server + D8/D9 corpora finish | WSA-3, DA-2 | `GET /api/kpis/*` returns fixtures; 20k reviews loaded, 800 emails |
 | Wed 18 | D7 KPI engine + D10 dashboard shell | DA-1, WSA-2 | KPIs match baseline; shell renders mock |
 | Thu 19 | **SAL 1 dry run**; fix gaps; tag contract `v1.0.0` | all | Dry run complete, contract frozen |
 | **Fri 20** | **SAL 1** | lead | Schema + contract frozen |
@@ -196,18 +191,21 @@ Everything here exists to make Nov 20 defensible. Ten items in nine days means t
 ### Schema v1 (student-level, 5 tables)
 
 ```ascii
-properties(id, name, type)
+properties(id, name, hotel_type, location_type, room_count,
+           ta_hotel_id)                          -- 2 rows, ta_hotel_id from ADR 0003 §1
 bookings(id, property_id, arrival_date, nights, adr,
          is_canceled, channel, country, ...)     -- 87,396 rows
-reviews(id, booking_id, property_id, date,
-        score, text, sentiment, topics[])        -- synthetic
+reviews(id, property_id, ta_hotel_id, post_date, stay_year,
+        overall, cleanliness, value, location, rooms,
+        sleep_quality, title, body, lang)        -- 20k, TripAdvisor
+                                                 -- NO FK to bookings (ADR 0003 §3)
 guest_requests(id, received_at, body, category,
                draft_reply, status)              -- synthetic
 kpi_daily(property_id, date, room_nights,
           revenue, adr, occupancy)               -- computed
 ```
 
-Flat, no star schema. `topics` as `TEXT[]`. No lookup tables — 178 countries is a plain column.
+Flat, no star schema. No lookup tables — 178 countries is a plain column. `reviews` carries no `sentiment`/`topics` columns: those are model output, computed at query time or in a derived table, not frozen into the source table.
 
 ### Contract freeze checklist (SAL 1)
 
@@ -217,7 +215,7 @@ Flat, no star schema. `topics` as `TEXT[]`. No lookup tables — 178 countries i
 - [ ] Mock server running from the spec
 - [ ] Data dictionary v1 (every column, every assumption)
 - [ ] Occupancy assumption documented (see §6)
-- [ ] Synthetic-data disclosure written (see §1 B3)
+- [ ] Two-source disclosure written: asserted property-level link, assumed room capacity (see §1 B3)
 - [ ] NDA / GDPR status stated, code ownership agreed (O1, O3)
 - [ ] Written status sent to client (O5)
 
@@ -298,7 +296,7 @@ O1 is the one with legal weight. Pseudonymize guest emails before they touch the
 
 | # | Risk | Evidence | Mitigation |
 |---|---|---|---|
-| R1 | Brief deliverables unmet: no reviews, no text | 0 of 32 columns | D8/D9 synthetic corpora; disclose at SAL 1 |
+| R1 | Brief deliverables unmet: no reviews, no text | 0 of 32 columns | ✅ Closed by ADR 0003 option E (TripAdvisor corpus); emails stay synthetic and disclosed |
 | R2 | Occupancy/RevPAR fabricated | no capacity column | Named constants + dashboard footnote |
 | R3 | Sprint 0 already late | due Nov 10, nothing built | Clear B1-B6 today |
 | R4 | Contract drift after freeze | — | Contract tests in CI |
@@ -344,7 +342,7 @@ If by Dec 4 the MVP is green, add stretch from `docs/plan.md` §Stretch in order
 
 - [ ] App deployed, public URL, login works
 - [ ] Occupancy + revenue dashboard on real (cleaned) data
-- [ ] Reputation dashboard on generated reviews, disclosed as synthetic
+- [ ] Reputation dashboard on real TripAdvisor reviews, property-level link disclosed as asserted
 - [ ] Search / filter over bookings (brief line 97: "dashboard, ricerca, visualizzazioni")
 - [ ] Email classifier + LLM draft reply, human approves before send
 - [ ] Guest-request inbox with approve / edit / send
