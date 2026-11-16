@@ -152,7 +152,9 @@ class KpiDaily(Base):
     room_nights = Column(Integer, nullable=False)
     revenue = Column(Numeric(10, 2), nullable=False)
     # room_nights / room_count: rapporto 0-1, senza x100 (delivery-plan §6)
-    occupancy = Column(Numeric(5, 2), nullable=False)
+    # 4 decimali e non 2: con 2 una camera al Buby Lago vale 0,53% e le medie
+    # calcolate sui valori salvati derivano (migrazione 0004)
+    occupancy = Column(Numeric(5, 4), nullable=False)
     # revenue / room_nights, vuoto se quel giorno non c'era nessuno
     adr = Column(Numeric(8, 2))
     # revpar = revenue / room_count

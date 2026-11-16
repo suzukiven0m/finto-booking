@@ -10,6 +10,18 @@ select = ["E", "F", "I", "UP", "B"]
 known-first-party = ["app"]
 known-third-party = ["alembic", "psycopg", "pytest", "sqlalchemy"]
 
+# gli script in data/ girano col venv del backend e importano `app`
+# (PYTHONPATH=backend, vedi il playbook): senza questa sezione ogni editor
+# segna quattro import rotti per file.
+[tool.pyright]
+# basic = il default che pyright usa quando non trova un config: senza questo
+# il solo fatto di avere la sezione qui alza il livello e riempie gli script
+# pandas di errori sugli stub.
+typeCheckingMode = "basic"
+venvPath = "backend"
+venv = ".venv"
+extraPaths = ["backend", "data"]
+
 [tool.isort]
 profile = "black"
 line_length = 100

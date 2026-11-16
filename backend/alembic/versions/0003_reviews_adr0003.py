@@ -13,6 +13,7 @@ La tabella è vuota (il loader D8 non esiste ancora), ma le rinomine
 usano alter_column invece di drop+create, così se qualcuno ha già
 caricato qualcosa non lo perde.
 """
+
 import sqlalchemy as sa
 from alembic import op
 
@@ -107,9 +108,7 @@ def downgrade() -> None:
     op.add_column("reviews", sa.Column("topics", sa.ARRAY(sa.Text())))
     op.add_column("reviews", sa.Column("sentiment", sa.String(10)))
     op.add_column("reviews", sa.Column("reviewer_nationality", sa.String(3)))
-    op.add_column(
-        "reviews", sa.Column("booking_id", sa.Integer(), sa.ForeignKey("bookings.id"))
-    )
+    op.add_column("reviews", sa.Column("booking_id", sa.Integer(), sa.ForeignKey("bookings.id")))
 
     op.alter_column("reviews", "lang", new_column_name="language")
     op.alter_column("reviews", "body", new_column_name="text")

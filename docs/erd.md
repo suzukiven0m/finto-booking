@@ -1,7 +1,7 @@
 # ERD — schema v1
 
 Schema generato da `backend/app/models.py` e applicato da Alembic
-(`0001` → `0002` → `0003`). Sorgente delle decisioni: ADR 0001, ADR 0002,
+(`0001` → `0002` → `0003` → `0004`). Sorgente delle decisioni: ADR 0001, ADR 0002,
 ADR 0003. Dizionario dei campi: `docs/data-dictionary.md`.
 
 ```mermaid
@@ -17,7 +17,7 @@ erDiagram
         varchar hotel_type "Resort Hotel / City Hotel"
         varchar location_type "lake / mountain"
         int room_count "capacita assunta, non misurata"
-        bigint ta_hotel_id UK "hotel TripAdvisor, scelto da DA-2"
+        bigint ta_hotel_id UK "hotel TripAdvisor scelto (ADR 0003 §1)"
     }
 
     bookings {
@@ -86,7 +86,7 @@ erDiagram
         date date
         int room_nights
         numeric revenue "10,2"
-        numeric occupancy "5,2 — rapporto 0-1"
+        numeric occupancy "5,4 — rapporto 0-1 (0004)"
         numeric adr "8,2, vuoto se 0 ospiti"
         numeric revenue_per_available_room "8,2"
     }

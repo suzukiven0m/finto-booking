@@ -82,3 +82,19 @@ jobs:
           print("reviews score/text/language NOT NULL: ok")
           PY
           alembic upgrade head
+
+      # data/ (playbook solo-dataset §7.2): seed del campione + test
+      - name: Data deps
+        run: pip install -r data/requirements.txt
+
+      - name: Seed sample (bookings + KPI + reviews + emails)
+        # tutti gli artefatti committati: niente pickle/CSV completo in CI
+        run: |
+          PYTHONPATH=backend python data/etl/load_bookings.py \
+            data/raw/sample_hotel_bookings.csv
+          PYTHONPATH=backend python data/etl/build_kpi_daily.py
+          PYTHONPATH=backend python data/etl/load_reviews.py
+          PYTHONPATH=backend python data/etl/gen_emails.py
+
+      - name: Data tests
+        run: PYTHONPATH=backend pytest -q data/tests
