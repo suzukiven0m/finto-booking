@@ -1,63 +1,75 @@
+---
 openapi: 3.0.3
 info:
   title: Buby Travel API
   version: 1.0.0
   description: |
-    Pinned API contract v1 for the SAL 1 demo (D6 Prism mock copy).
+    Canonical API contract v1 for the Buby Travel dashboard, search and
+    guest-request assistant. Frozen at SAL 1 (2026-11-20).
 
-    This file mirrors the canonical root `openapi.yaml` (authored by D5); field
-    names, types and baseline examples are binding and must stay in sync at
-    integration.
+    Sources of truth: `docs/data-dictionary.md` (KPI rules + clean baseline),
+    `docs/erd.md` (5-table schema), `docs/adr/0001-tech-stack.md` (stack, JWT
+    roles), `docs/adr/0003-data-sources.md` (data sources),
+    `docs/delivery-plan.md`.
 
-    Disclosures (freeze checklist, docs/data-dictionary.md §1):
-    - Occupancy and RevPAR use ASSUMED capacity (Buby Lago 190 rooms, Buby
-      Montagna 230 rooms), inferred from observed peaks — never measured.
-    - The reviews↔bookings link is ASSERTED at property level, not factual.
-      Occupancy/revenue KPIs come only from bookings; reputation KPIs only from
-      reviews.
-    - guest_requests emails are SYNTHETIC. The two properties are fictional (1:1
-      map of the CSV's Resort Hotel / City Hotel types).
+    **Disclosures (binding, must also appear in the UI):**
+    - The two properties are **fictional**: a 1:1 map of the two hotel types in
+      the Kaggle Hotel Booking Demand CSV (Buby Lago ← Resort Hotel,
+      Buby Montagna ← City Hotel). No real Buby data exists.
+    - Occupancy and RevPAR are computed against **assumed capacity**
+      (Buby Lago 190 rooms, Buby Montagna 230 rooms), inferred from observed
+      peaks — never measured. They must never be presented as measured.
+    - The reviews ↔ bookings link is **asserted at property level**, not
+      factual (a 2012 TripAdvisor reviewer is not the guest of a 2016 booking).
+      Occupancy/revenue KPIs come only from bookings; reputation KPIs come
+      only from reviews.
+    - `guest_requests` emails are **synthetic** (generator DA-3), not real
+      guest correspondence.
 
-    KPI rules and clean baseline: docs/data-dictionary.md §3.
+    Authentication: JWT bearer with roles `admin`, `manager`,
+    `property_manager` (ADR 0001). Only the scheme is frozen here; real JWT
+    issuance and role enforcement land with D11. `/api/properties` and
+    `/api/auth/login` are unauthenticated for the demo.
+
+    Conventions: list endpoints paginate with `page`/`page_size` and return
+    `{ data: [...], meta: { page, page_size, total, total_pages } }`. Every
+    4xx/5xx response uses the error envelope `{ error: { code, message,
+    details? } }`.
 servers:
   - url: http://localhost:8000
     description: Real FastAPI backend (D12)
   - url: http://localhost:4010
-    description: Prism mock server (D6)
+    description: Prism mock server generated from this spec (D6)
 security:
   - bearerAuth: []
 tags:
   - name: properties
-    description: >-
-      The two fictional Buby properties (assumed capacity, not measured).
+    description: The two fictional Buby properties.
   - name: kpis
-    description: >-
-      KPIs computed from bookings only. Occupancy/RevPAR use assumed capacity.
+    description: Occupancy/revenue KPIs, computed only from cleaned bookings.
   - name: reviews
     description: >-
-      TripAdvisor reputation KPIs. Link to bookings is asserted at property
-      level, not factual.
+      Reputation KPIs and raw TripAdvisor reviews (asserted
+      property-level link).
   - name: bookings
-    description: >-
-      Booking search (D19). Real CSV data, deduplicated on the original columns.
+    description: Booking search/filter (D19).
   - name: guest-requests
     description: >-
-      Synthetic guest emails (D20 inbox). category/draft_reply are assistant
-      output (null until D15).
+      Synthetic guest-email inbox with human-in-the-loop assistant
+      (D20).
   - name: auth
-    description: JWT login. Scheme frozen here; real issuance is D11.
-
+    description: JWT login. Scheme frozen at SAL 1; implementation is D11.
 paths:
   /api/properties:
     get:
       operationId: listProperties
       tags: [properties]
-      summary: >-
-        List the two fictional properties (1:1 map of the CSV's hotel types).
+      summary: List the two Buby properties
       description: |
-        Exactly two properties. room_count is ASSUMED capacity (190/230), not
-        measured.
-        No pagination. Open for the demo (no auth required).
+        Returns exactly two properties. They are fictional: a 1:1 map of the
+        CSV's two hotel types (Resort Hotel → Buby Lago, City Hotel →
+        Buby Montagna). `room_count` is assumed capacity, not measured.
+        Unauthenticated for the demo.
       security: []
       responses:
         "200":
@@ -80,61 +92,47 @@ paths:
                     location_type: mountain
                     room_count: 230
                     ta_hotel_id: 2079052
-
   /api/kpis/summary:
     get:
       operationId: getKpiSummary
       tags: [kpis]
-      summary: Headline KPIs over the selected property and date range.
+      summary: Headline KPIs for a property (or both) and a date range
       description: |
-        Rules (docs/data-dictionary.md §3): revenue = adr × nights over
-        is_canceled=0 AND nights>0 AND adr>0; cancellation_rate = canceled/total
-        post-dedup (No-Show reported separately); adr = revenue/room_nights;
-        occupancy_avg = mean(room_nights/room_count); revpar =
-        revenue/room_count/available-days.
-        occupancy_avg and revpar use ASSUMED capacity (Buby Lago 190, Buby
-        Montagna 230), never measured. The example is the full-dataset clean
-        baseline (2015-07-01 → 2017-08-31, both properties);
-        occupancy_avg/revpar in the example are derived from that baseline
-        against the assumed capacity (420 rooms × 793 days).
+        KPI rules are binding (`docs/data-dictionary.md` §3): revenue =
+        adr × nights over `is_canceled=0 AND nights>0 AND adr>0` after exact
+        dedup on the original CSV columns; cancellation_rate =
+        canceled / total post-dedup (No-Show reported separately);
+        adr = revenue / room_nights; occupancy_avg =
+        mean(room_nights / room_count); revpar =
+        revenue / room_count / available-days. Occupancy and RevPAR use
+        **assumed capacity** (190 / 230 rooms), never measured.
+        The example is the full-dataset clean baseline the seed script must
+        reproduce.
       parameters:
         - $ref: "#/components/parameters/PropertyId"
         - $ref: "#/components/parameters/DateFrom"
         - $ref: "#/components/parameters/DateTo"
       responses:
         "200":
-          description: KPI summary (example = full-dataset clean baseline).
+          description: KPI summary matching the pinned rules.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/KpiSummary"
-              example:
-                property_id: null
-                date_from: "2015-07-01"
-                date_to: "2017-08-31"
-                valid_bookings: 61777
-                revenue: 22976960.13
-                room_nights: 218410
-                adr: 105.20
-                cancellation_rate: 0.2749
-                occupancy_avg: 0.6558
-                revpar: 68.99
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
         "422":
           $ref: "#/components/responses/ValidationError"
-
   /api/kpis/daily:
     get:
       operationId: getKpiDaily
       tags: [kpis]
-      summary: Daily KPI time series (occupancy, revenue, ADR, RevPAR per day).
+      summary: Daily KPI series (paginated)
       description: |
-        One point per day. occupancy is a 0-1 ratio against ASSUMED capacity
-        (190/230 rooms), not measured. adr is null on zero-activity days.
-        The example series is Buby Lago (190 rooms), November 2016.
+        One point per day from `kpi_daily`, computed from non-canceled
+        bookings. `occupancy` is a 0-1 ratio against **assumed capacity**
+        (190 / 230 rooms), not a percentage and not measured. `adr` is null
+        on zero-activity days.
       parameters:
         - $ref: "#/components/parameters/PropertyId"
         - $ref: "#/components/parameters/DateFrom"
@@ -143,43 +141,31 @@ paths:
         - $ref: "#/components/parameters/PageSize"
       responses:
         "200":
-          description: Paginated daily KPI points.
+          description: Paginated daily series, ordered by date.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/KpiDailyPage"
               example:
                 data:
-                  - date: "2016-11-02"
-                    room_nights: 96
-                    revenue: 7910.40
-                    occupancy: 0.5053
-                    adr: 82.40
-                    revenue_per_available_room: 41.63
-                  - date: "2016-11-03"
-                    room_nights: 88
-                    revenue: 7031.20
-                    occupancy: 0.4632
-                    adr: 79.90
-                    revenue_per_available_room: 37.01
-                  - date: "2016-11-04"
+                  - date: "2016-01-10"
+                    room_nights: 42
+                    revenue: 2625.00
+                    occupancy: 0.2211
+                    adr: 62.50
+                    revenue_per_available_room: 13.82
+                  - date: "2016-01-11"
+                    room_nights: 38
+                    revenue: 2280.00
+                    occupancy: 0.2000
+                    adr: 60.00
+                    revenue_per_available_room: 12.00
+                  - date: "2016-01-12"
                     room_nights: 0
                     revenue: 0.00
                     occupancy: 0.0000
                     adr: null
                     revenue_per_available_room: 0.00
-                  - date: "2016-11-05"
-                    room_nights: 104
-                    revenue: 8850.40
-                    occupancy: 0.5474
-                    adr: 85.10
-                    revenue_per_available_room: 46.58
-                  - date: "2016-11-06"
-                    room_nights: 121
-                    revenue: 10684.30
-                    occupancy: 0.6368
-                    adr: 88.30
-                    revenue_per_available_room: 56.23
                 meta:
                   page: 1
                   page_size: 50
@@ -187,28 +173,25 @@ paths:
                   total_pages: 16
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
         "422":
           $ref: "#/components/responses/ValidationError"
-
   /api/kpis/channels:
     get:
       operationId: getKpiChannels
       tags: [kpis]
-      summary: Channel mix by market_segment (8 values).
+      summary: Channel mix by market segment
       description: |
-        agent/company are unmapped numeric IDs: no named-OTA breakdown is
-        possible.
-        Example shares/revenues sum to the clean baseline (61,777 valid
-        bookings, €22,976,960.13 realized revenue).
+        Bookings, revenue and share per `market_segment` (the 8 CSV values).
+        `agent`/`company` are unmapped numeric IDs: no named-OTA breakdown is
+        possible. The example splits the full-dataset baseline across the 8
+        segments (illustrative split; totals match the baseline exactly).
       parameters:
         - $ref: "#/components/parameters/PropertyId"
         - $ref: "#/components/parameters/DateFrom"
         - $ref: "#/components/parameters/DateTo"
       responses:
         "200":
-          description: Channel mix items (one per market_segment).
+          description: One item per market segment.
           content:
             application/json:
               schema:
@@ -216,59 +199,56 @@ paths:
               example:
                 data:
                   - market_segment: Online TA
-                    bookings: 24862
-                    revenue: 9874512.30
-                    share: 0.4025
+                    bookings: 34910
+                    revenue: 12680450.20
+                    share: 0.5651
                   - market_segment: Offline TA/TO
-                    bookings: 10228
-                    revenue: 4520311.85
-                    share: 0.1656
+                    bookings: 10125
+                    revenue: 3785120.45
+                    share: 0.1639
                   - market_segment: Direct
-                    bookings: 9316
-                    revenue: 3410988.20
-                    share: 0.1508
+                    bookings: 8560
+                    revenue: 3120340.10
+                    share: 0.1386
                   - market_segment: Groups
-                    bookings: 8712
-                    revenue: 2688450.10
-                    share: 0.1410
+                    bookings: 5390
+                    revenue: 1890230.38
+                    share: 0.0872
                   - market_segment: Corporate
-                    bookings: 6394
-                    revenue: 1899210.45
-                    share: 0.1035
+                    bookings: 2432
+                    revenue: 1305420.00
+                    share: 0.0394
                   - market_segment: Complementary
-                    bookings: 1804
-                    revenue: 120344.63
-                    share: 0.0292
+                    bookings: 320
+                    revenue: 130250.00
+                    share: 0.0052
                   - market_segment: Aviation
-                    bookings: 385
-                    revenue: 462110.60
-                    share: 0.0062
+                    bookings: 38
+                    revenue: 64100.00
+                    share: 0.0006
                   - market_segment: Undefined
-                    bookings: 76
-                    revenue: 1032.00
-                    share: 0.0012
+                    bookings: 2
+                    revenue: 1049.00
+                    share: 0.0000
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
         "422":
           $ref: "#/components/responses/ValidationError"
-
   /api/kpis/seasonality:
     get:
       operationId: getKpiSeasonality
       tags: [kpis]
-      summary: Month-of-year averages (never raw monthly totals).
+      summary: Month-of-year averages (seasonality)
       description: |
-        Averages per month-of-year across 2015–2017; 2015 and 2017 are partial
-        years, so raw monthly totals would mislead. avg_occupancy uses ASSUMED
-        capacity.
-        Example values are illustrative (both properties, 420 assumed rooms).
+        Averages per month-of-year (1-12), never raw monthly totals: 2015 and
+        2017 are partial years and raw totals mislead. `avg_occupancy` is a
+        0-1 ratio against **assumed capacity** (190 / 230 rooms), not
+        measured. Example values are illustrative monthly averages.
       parameters:
         - $ref: "#/components/parameters/PropertyId"
       responses:
         "200":
-          description: Twelve month-of-year points.
+          description: Twelve points, one per month-of-year.
           content:
             application/json:
               schema:
@@ -276,93 +256,90 @@ paths:
               example:
                 data:
                   - month: 1
-                    avg_adr: 76.40
+                    avg_adr: 72.40
                     avg_occupancy: 0.4120
-                    avg_revenue: 13204.80
+                    avg_revenue: 6264.05
                   - month: 2
-                    avg_adr: 78.10
-                    avg_occupancy: 0.4480
-                    avg_revenue: 14718.50
+                    avg_adr: 74.10
+                    avg_occupancy: 0.4530
+                    avg_revenue: 7049.13
                   - month: 3
-                    avg_adr: 84.60
-                    avg_occupancy: 0.5230
-                    avg_revenue: 18590.20
+                    avg_adr: 82.30
+                    avg_occupancy: 0.5210
+                    avg_revenue: 9004.44
                   - month: 4
-                    avg_adr: 92.30
-                    avg_occupancy: 0.6010
-                    avg_revenue: 23288.40
+                    avg_adr: 95.60
+                    avg_occupancy: 0.6140
+                    avg_revenue: 12326.66
                   - month: 5
-                    avg_adr: 99.80
-                    avg_occupancy: 0.6640
-                    avg_revenue: 27877.10
+                    avg_adr: 104.80
+                    avg_occupancy: 0.6620
+                    avg_revenue: 14569.30
                   - month: 6
-                    avg_adr: 112.50
-                    avg_occupancy: 0.7420
-                    avg_revenue: 35028.60
+                    avg_adr: 118.50
+                    avg_occupancy: 0.7180
+                    avg_revenue: 17867.43
                   - month: 7
-                    avg_adr: 128.90
-                    avg_occupancy: 0.8360
-                    avg_revenue: 45231.70
+                    avg_adr: 132.90
+                    avg_occupancy: 0.7860
+                    avg_revenue: 21936.47
                   - month: 8
-                    avg_adr: 134.20
-                    avg_occupancy: 0.8710
-                    avg_revenue: 49094.30
+                    avg_adr: 141.20
+                    avg_occupancy: 0.8340
+                    avg_revenue: 24729.77
                   - month: 9
                     avg_adr: 108.70
-                    avg_occupancy: 0.7180
-                    avg_revenue: 32750.90
+                    avg_occupancy: 0.6890
+                    avg_revenue: 15727.80
                   - month: 10
-                    avg_adr: 93.40
-                    avg_occupancy: 0.6120
-                    avg_revenue: 24018.20
+                    avg_adr: 92.40
+                    avg_occupancy: 0.6030
+                    avg_revenue: 11700.61
                   - month: 11
-                    avg_adr: 80.20
-                    avg_occupancy: 0.4890
-                    avg_revenue: 16470.50
+                    avg_adr: 76.80
+                    avg_occupancy: 0.4680
+                    avg_revenue: 7547.90
                   - month: 12
-                    avg_adr: 82.90
-                    avg_occupancy: 0.5060
-                    avg_revenue: 17622.40
+                    avg_adr: 84.50
+                    avg_occupancy: 0.5120
+                    avg_revenue: 9085.44
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
         "422":
           $ref: "#/components/responses/ValidationError"
-
   /api/reviews/summary:
     get:
       operationId: getReviewSummary
       tags: [reviews]
-      summary: Reputation summary from TripAdvisor reviews only.
+      summary: Reputation summary from TripAdvisor reviews
       description: |
-        Scores are real guest scores (1–5, weak labels), not model output.
-        The reviews↔bookings link is ASSERTED at property level, not factual:
-        reputation KPIs come only from reviews, never joined to individual
-        bookings.
-        property_id=null aggregates both properties.
+        Averages of the real guest scores (overall + five dimensions, 1-5)
+        from the TripAdvisor corpus. These are real guest scores used as weak
+        labels, **not model output**. The reviews ↔ bookings link is
+        **asserted at property level**, not factual: reputation KPIs come
+        only from reviews, never joined to individual bookings.
       parameters:
         - $ref: "#/components/parameters/PropertyId"
       responses:
         "200":
-          description: Review summary (default example = Buby Lago).
+          description: Review counts and average scores.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ReviewSummary"
               examples:
-                lago:
+                bubyLago:
                   summary: Buby Lago (property 1)
                   value:
                     property_id: 1
                     count: 762
                     overall: 3.86
-                    cleanliness: 4.12
+                    cleanliness: 4.02
                     value: 3.71
-                    location: 4.55
-                    rooms: 3.80
-                    sleep_quality: 3.92
-                montagna:
+                    location: 4.35
+                    rooms: 3.68
+                    sleep_quality: 3.55
+                bubyMontagna:
                   summary: Buby Montagna (property 2)
                   value:
                     property_id: 2
@@ -371,31 +348,30 @@ paths:
                     cleanliness: 4.51
                     value: 4.28
                     location: 4.62
-                    rooms: 4.35
-                    sleep_quality: 4.41
+                    rooms: 4.31
+                    sleep_quality: 4.22
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
         "422":
           $ref: "#/components/responses/ValidationError"
-
   /api/reviews:
     get:
       operationId: listReviews
       tags: [reviews]
-      summary: Paginated TripAdvisor reviews (real guest text and scores).
+      summary: Raw TripAdvisor reviews (paginated)
       description: |
-        No sentiment/topics fields: those are model output (ADR 0003 §3) and
-        live in a derived table, never on the source rows. Link to bookings is
-        asserted at property level only.
+        Real public TripAdvisor reviews, linked to a property by an
+        **asserted** mapping (no FK to bookings, ADR 0003 §3). Scores are
+        real guest scores (weak labels). No `sentiment`/`topics` fields:
+        those are model output (D14) and live in a derived table, never in
+        the source contract.
       parameters:
         - $ref: "#/components/parameters/PropertyId"
         - $ref: "#/components/parameters/Page"
         - $ref: "#/components/parameters/PageSize"
       responses:
         "200":
-          description: Paginated reviews.
+          description: Paginated reviews, newest first by post_date.
           content:
             application/json:
               schema:
@@ -408,33 +384,16 @@ paths:
                     post_date: "2012-05-14"
                     stay_year: 2012
                     overall: 4.0
-                    cleanliness: 5.0
+                    cleanliness: 4.0
                     value: 4.0
                     location: 5.0
                     rooms: 4.0
                     sleep_quality: 4.0
-                    title: Lovely lakeside resort
+                    title: Lovely lakeside stay
                     body: >-
-                      Great location right on the lake. Staff were friendly and
-                      the breakfast buffet had plenty of choice. Rooms are a bit
-                      dated but clean.
-                    lang: __label__en
-                  - id: 2
-                    property_id: 1
-                    ta_hotel_id: 93618
-                    post_date: "2012-06-02"
-                    stay_year: 2011
-                    overall: 3.0
-                    cleanliness: 4.0
-                    value: 3.0
-                    location: 5.0
-                    rooms: 3.0
-                    sleep_quality: null
-                    title: Nice view, thin walls
-                    body: >-
-                      The view from the balcony is stunning but we could hear
-                      the neighbours every night. Reception handled our room
-                      change politely.
+                      Great location right by the water. Staff were
+                      friendly and breakfast had plenty of choice.
+                      Rooms are a bit dated but clean.
                     lang: __label__en
                 meta:
                   page: 1
@@ -443,20 +402,17 @@ paths:
                   total_pages: 16
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
         "422":
           $ref: "#/components/responses/ValidationError"
-
   /api/bookings:
     get:
       operationId: listBookings
       tags: [bookings]
-      summary: Booking search with filters (D19).
+      summary: Search/filter bookings (paginated, D19)
       description: |
-        Real hotel_bookings.csv rows, deduplicated on the original columns.
-        nights is generated (weekend + week nights). is_canceled rows are
-        included and filterable.
+        One row per deduplicated CSV booking (canceled and non-canceled).
+        `nights` is the Postgres-generated sum of weekend + week nights.
+        `country` is a 3-letter code, not PII.
       parameters:
         - $ref: "#/components/parameters/PropertyId"
         - $ref: "#/components/parameters/DateFrom"
@@ -467,7 +423,7 @@ paths:
         - $ref: "#/components/parameters/PageSize"
       responses:
         "200":
-          description: Paginated bookings.
+          description: Paginated bookings, ordered by arrival_date.
           content:
             application/json:
               schema:
@@ -477,8 +433,8 @@ paths:
                   - id: 1
                     property_id: 1
                     arrival_date: "2015-07-01"
-                    nights: 3
-                    adr: 98.50
+                    nights: 4
+                    adr: 104.50
                     is_canceled: false
                     adults: 2
                     children: 0
@@ -488,22 +444,7 @@ paths:
                     market_segment: Direct
                     distribution_channel: Direct
                     deposit_type: No Deposit
-                    lead_time: 34
-                  - id: 2
-                    property_id: 2
-                    arrival_date: "2015-07-01"
-                    nights: 2
-                    adr: 105.00
-                    is_canceled: true
-                    adults: 2
-                    children: 0
-                    babies: 0
-                    country: GBR
-                    customer_type: Transient
-                    market_segment: Online TA
-                    distribution_channel: TA/TO
-                    deposit_type: Non Refund
-                    lead_time: 112
+                    lead_time: 74
                 meta:
                   page: 1
                   page_size: 50
@@ -511,21 +452,18 @@ paths:
                   total_pages: 1748
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
         "422":
           $ref: "#/components/responses/ValidationError"
-
   /api/guest-requests:
     get:
       operationId: listGuestRequests
       tags: [guest-requests]
-      summary: Guest-request inbox (D20). Emails are SYNTHETIC.
+      summary: Guest-request inbox (paginated, D20)
       description: |
-        Synthetic guest emails (DA-3). category and draft_reply are assistant
-        OUTPUT and stay null until D15.
-        true_category/true_urgency never appear here (anti-leakage,
-        docs/delivery-plan.md).
+        **Synthetic** guest emails (generator DA-3), not real correspondence.
+        `category` and `draft_reply` are assistant OUTPUT: null until the
+        classifier + LLM draft reply land (D15). A human always approves
+        before anything is sent.
       parameters:
         - $ref: "#/components/parameters/PropertyId"
         - $ref: "#/components/parameters/RequestStatus"
@@ -533,7 +471,7 @@ paths:
         - $ref: "#/components/parameters/PageSize"
       responses:
         "200":
-          description: Paginated guest requests.
+          description: Paginated guest requests, newest first by received_at.
           content:
             application/json:
               schema:
@@ -544,19 +482,9 @@ paths:
                     property_id: 1
                     received_at: "2017-08-12T09:24:00Z"
                     body: >-
-                      Hello, do you have a double room with lake view available
-                      from August 20 to August 24? We are celebrating our
-                      anniversary. Kind regards, Marta
-                    category: null
-                    draft_reply: null
-                    status: new
-                  - id: 2
-                    property_id: 2
-                    received_at: "2017-08-12T14:02:00Z"
-                    body: >-
-                      I need to cancel my reservation for September 3 due to a
-                      family emergency. Is the deposit refundable? Thank you,
-                      João
+                      Hello, do you have a double room available for
+                      the weekend of August 25th? We would also need a
+                      parking space. Thank you!
                     category: null
                     draft_reply: null
                     status: new
@@ -567,19 +495,18 @@ paths:
                   total_pages: 16
         "401":
           $ref: "#/components/responses/Unauthorized"
-        "403":
-          $ref: "#/components/responses/Forbidden"
         "422":
           $ref: "#/components/responses/ValidationError"
-
   /api/guest-requests/{id}:
     patch:
       operationId: updateGuestRequest
       tags: [guest-requests]
-      summary: Approve/edit/send a guest-request reply (human-in-the-loop).
+      summary: Approve / edit / send a guest-request reply (human-in-the-loop)
       description: |
-        The assistant drafts; a human approves, edits and sends. draft_reply may
-        be human-edited text. Emails are synthetic.
+        Updates the status and/or the draft reply of a synthetic guest
+        request. The assistant proposes; a human approves, edits and sends
+        (D20). Sending (`status: sent`) never happens without this explicit
+        human action.
       parameters:
         - $ref: "#/components/parameters/GuestRequestId"
       requestBody:
@@ -591,9 +518,9 @@ paths:
             example:
               status: draft
               draft_reply: >-
-                Dear Marta, thank you for your message. We would be delighted to
-                host your anniversary stay. A double room with lake view is
-                available from August 20 to 24. Best regards, Buby Lago
+                Dear guest, thank you for your message. A double room
+                is available for the weekend of August 25th and a
+                parking space can be reserved. Kind regards, Buby Lago.
       responses:
         "200":
           description: The updated guest request.
@@ -606,14 +533,15 @@ paths:
                 property_id: 1
                 received_at: "2017-08-12T09:24:00Z"
                 body: >-
-                  Hello, do you have a double room with lake view available from
-                  August 20 to August 24? We are celebrating our anniversary.
-                  Kind regards, Marta
+                  Hello, do you have a double room available for the
+                  weekend of August 25th? We would also need a parking
+                  space. Thank you!
                 category: null
                 draft_reply: >-
-                  Dear Marta, thank you for your message. We would be delighted
-                  to host your anniversary stay. A double room with lake view is
-                  available from August 20 to 24. Best regards, Buby Lago
+                  Dear guest, thank you for your message. A double room
+                  is available for the weekend of August 25th and a
+                  parking space can be reserved. Kind regards,
+                  Buby Lago.
                 status: draft
         "401":
           $ref: "#/components/responses/Unauthorized"
@@ -623,17 +551,16 @@ paths:
           $ref: "#/components/responses/NotFound"
         "422":
           $ref: "#/components/responses/ValidationError"
-
   /api/auth/login:
     post:
       operationId: login
       tags: [auth]
-      summary: >-
-        Exchange credentials for a JWT (scheme frozen; real issuance is D11).
+      summary: Exchange credentials for a JWT
       description: |
-        Roles: admin, manager, property_manager. Open endpoint (no auth
-        required).
-        The mock accepts any credentials and returns a static demo token.
+        Returns a JWT bearer token and the caller's role (`admin`, `manager`
+        or `property_manager`, ADR 0001). Only the scheme is frozen at SAL 1;
+        real JWT issuance and role enforcement are implemented in D11.
+        Unauthenticated by definition. The example token is illustrative.
       security: []
       requestBody:
         required: true
@@ -643,16 +570,19 @@ paths:
               $ref: "#/components/schemas/LoginRequest"
             example:
               email: manager@buby.travel
-              password: demo
+              password: demo-password
       responses:
         "200":
-          description: JWT issued (demo token in the mock).
+          description: Token issued.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/LoginResponse"
               example:
-                access_token: eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoibWFuYWdlciJ9.mock
+                access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.\
+                  eyJzdWIiOiJtYW5hZ2VyQGJ1YnkudHJhdmVsIiwicm9sZSI6\
+                  Im1hbmFnZXIiLCJleHAiOjE3OTUyMzQwMDB9.\
+                  k3Qb8Xw2Zr7Yc1Vn9TdLm5Hs0PfJaU6EgOi4RxKvC2w"
                 token_type: bearer
                 role: manager
         "401":
@@ -660,14 +590,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorEnvelope"
+                $ref: "#/components/schemas/Error"
               example:
                 error:
                   code: invalid_credentials
                   message: Email or password is incorrect.
         "422":
           $ref: "#/components/responses/ValidationError"
-
 components:
   securitySchemes:
     bearerAuth:
@@ -675,35 +604,44 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: |
-        JWT with role claim. Roles: admin (full access), manager (all
-        properties), property_manager (own property only). Implementation is
-        D11; only the scheme is frozen in this contract.
-
+        JWT issued by POST /api/auth/login. Roles: `admin`, `manager`,
+        `property_manager` (ADR 0001). Implementation is D11; only the
+        scheme is frozen at SAL 1.
   parameters:
     PropertyId:
       name: property_id
       in: query
       required: false
-      description: Filter by property. Omit/null = both properties.
+      description: |
+        Filter by property: 1 = Buby Lago, 2 = Buby Montagna. Omitted or
+        null = both properties.
       schema:
         type: integer
-        enum: [1, 2]
+        nullable: true
+        enum: [1, 2, null]
+      example: 1
     DateFrom:
       name: date_from
       in: query
       required: false
-      description: Inclusive start date (arrival/stay date).
+      description: >-
+        Inclusive lower bound on arrival_date. Omitted = dataset start
+        (2015-07-01).
       schema:
         type: string
         format: date
+      example: "2015-07-01"
     DateTo:
       name: date_to
       in: query
       required: false
-      description: Inclusive end date (arrival/stay date).
+      description: >-
+        Inclusive upper bound on arrival_date. Omitted = dataset end
+        (2017-08-31).
       schema:
         type: string
         format: date
+      example: "2017-08-31"
     Page:
       name: page
       in: query
@@ -717,7 +655,7 @@ components:
       name: page_size
       in: query
       required: false
-      description: Items per page.
+      description: Items per page (max 200).
       schema:
         type: integer
         minimum: 1
@@ -727,30 +665,24 @@ components:
       name: is_canceled
       in: query
       required: false
-      description: Filter by cancellation flag.
+      description: Filter by cancellation flag. Omitted = both.
       schema:
         type: boolean
     MarketSegment:
       name: market_segment
       in: query
       required: false
-      description: Filter by market segment (8 CSV values).
+      description: |
+        Filter by market segment. The 8 CSV values: Aviation, Complementary,
+        Corporate, Direct, Groups, Offline TA/TO, Online TA, Undefined.
       schema:
         type: string
-        enum:
-          - Direct
-          - Corporate
-          - Online TA
-          - Offline TA/TO
-          - Groups
-          - Complementary
-          - Aviation
-          - Undefined
+      example: Online TA
     RequestStatus:
       name: status
       in: query
       required: false
-      description: Filter by inbox status.
+      description: Filter the inbox by status. Omitted = all.
       schema:
         type: string
         enum: [new, draft, sent]
@@ -758,77 +690,80 @@ components:
       name: id
       in: path
       required: true
-      description: Guest request id.
+      description: Guest-request id.
       schema:
         type: integer
-
+        minimum: 1
+      example: 1
   responses:
+    Unauthorized:
+      description: Missing or invalid bearer token.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              code: unauthorized
+              message: Missing or invalid bearer token.
+    Forbidden:
+      description: >-
+        Authenticated, but the caller's role may not perform this action
+        (enforcement lands with D11).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              code: forbidden
+              message: Your role is not allowed to perform this action.
     NotFound:
       description: Resource not found.
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/ErrorEnvelope"
+            $ref: "#/components/schemas/Error"
           example:
             error:
               code: not_found
-              message: The requested resource does not exist.
-    Unauthorized:
-      description: Missing or invalid JWT.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorEnvelope"
-          example:
-            error:
-              code: unauthorized
-              message: A valid bearer token is required.
-    Forbidden:
-      description: Authenticated but the role cannot access this resource.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorEnvelope"
-          example:
-            error:
-              code: forbidden
-              message: Your role does not allow access to this property.
+              message: Resource not found.
     ValidationError:
-      description: Query/body validation failed.
+      description: Query parameters or request body failed validation.
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/ErrorEnvelope"
+            $ref: "#/components/schemas/Error"
           example:
             error:
               code: validation_error
-              message: Request validation failed.
+              message: Request parameters or body failed validation.
               details:
-                property_id: must be one of [1, 2]
-
+                page_size: Must be between 1 and 200.
   schemas:
     Error:
       type: object
-      required: [code, message]
-      properties:
-        code:
-          type: string
-          description: Machine-readable error code.
-        message:
-          type: string
-          description: Human-readable error message.
-        details:
-          type: object
-          nullable: true
-          description: Optional field-level details.
-    ErrorEnvelope:
-      type: object
+      description: Error envelope used by every 4xx/5xx response.
       required: [error]
       properties:
         error:
-          $ref: "#/components/schemas/Error"
-    PageMeta:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code.
+            message:
+              type: string
+              description: Human-readable error message.
+            details:
+              type: object
+              nullable: true
+              additionalProperties: true
+              description: Optional per-field or contextual details.
+    PaginationMeta:
       type: object
+      description: Pagination metadata returned by every list endpoint.
       required: [page, page_size, total, total_pages]
       properties:
         page:
@@ -840,14 +775,16 @@ components:
           maximum: 200
         total:
           type: integer
-          description: Total items across all pages.
+          minimum: 0
+          description: Total items matching the filters, across all pages.
         total_pages:
           type: integer
+          minimum: 0
     Property:
       type: object
       description: |
-        Fictional property (1:1 map of the CSV's hotel types). room_count is
-        ASSUMED capacity (Assunzione 3), not measured.
+        A fictional Buby property: 1:1 map of the CSV's two hotel types
+        (Resort Hotel → Buby Lago, City Hotel → Buby Montagna).
       required: [id, name, hotel_type, location_type, room_count, ta_hotel_id]
       properties:
         id:
@@ -856,21 +793,24 @@ components:
           type: string
         hotel_type:
           type: string
-          description: >-
-            Value of the CSV `hotel` column (Resort Hotel / City Hotel).
+          description: Value of the CSV `hotel` column. Not unique.
         location_type:
           type: string
           enum: [lake, mountain]
         room_count:
           type: integer
-          description: >-
-            Assumed capacity, not measured (Buby Lago 190, Buby Montagna 230).
+          description: |
+            ASSUMED capacity, not measured: Buby Lago 190, Buby Montagna 230
+            (observed peak + margin, data dictionary Assunzione 3).
         ta_hotel_id:
           type: integer
           nullable: true
-          description: TripAdvisor hotel id chosen by DA-2; null until chosen.
+          description: >-
+            TripAdvisor hotel id chosen by DA-2. Null until chosen;
+            never changed after SAL 1.
     PropertyList:
       type: object
+      description: Unpaginated list — exactly two properties.
       required: [data]
       properties:
         data:
@@ -882,8 +822,12 @@ components:
     KpiSummary:
       type: object
       description: |
-        Headline KPIs. occupancy_avg and revpar use ASSUMED capacity (190/230),
-        never measured. Baseline rules in docs/data-dictionary.md §3.
+        Headline KPIs per docs/data-dictionary.md §3. The example is the
+        full-dataset clean baseline (post exact dedup, filter
+        is_canceled=0 AND nights>0 AND adr>0): any endpoint that does not
+        reproduce it on the full dataset is wrong. occupancy_avg and revpar
+        in the example are derived against assumed capacity
+        (420 rooms × 793 days, 2015-07-01 → 2017-08-31).
       required:
         - property_id
         - date_from
@@ -899,7 +843,8 @@ components:
         property_id:
           type: integer
           nullable: true
-          description: null = both properties.
+          enum: [1, 2, null]
+          description: 1 = Buby Lago, 2 = Buby Montagna, null = both.
         date_from:
           type: string
           format: date
@@ -908,32 +853,45 @@ components:
           format: date
         valid_bookings:
           type: integer
-          description: >-
-            Non-canceled, nights>0, adr>0, post-dedup. Baseline 61,777.
+          description: Non-canceled, nights>0, adr>0, post-dedup.
         revenue:
           type: number
-          description: >-
-            adr × nights over valid bookings. Baseline €22,976,960.13.
+          description: Realized revenue = sum(adr × nights) over valid bookings.
         room_nights:
           type: integer
-          description: Baseline 218,410.
+          description: Sum of nights over valid bookings.
         adr:
           type: number
-          description: revenue / room_nights. Baseline €105.20.
+          description: revenue / room_nights (adr>0 only).
         cancellation_rate:
           type: number
           description: >-
-            canceled/total post-dedup, No-Show excluded. Baseline 0.2749.
+            Canceled / total, post-dedup, 0-1 ratio. No-Show reported
+            separately.
         occupancy_avg:
           type: number
-          description: >-
-            mean(room_nights/room_count), 0-1 ratio, ASSUMED capacity.
+          description: |
+            mean(room_nights / room_count), 0-1 ratio against ASSUMED
+            capacity (190 / 230 rooms) — never measured.
         revpar:
           type: number
-          description: revenue/room_count/available-days, ASSUMED capacity.
+          description: |
+            revenue / room_count / available-days, against ASSUMED capacity
+            (190 / 230 rooms) — never measured.
+      example:
+        property_id: null
+        date_from: "2015-07-01"
+        date_to: "2017-08-31"
+        valid_bookings: 61777
+        revenue: 22976960.13
+        room_nights: 218410
+        adr: 105.20
+        cancellation_rate: 0.2749
+        occupancy_avg: 0.6558
+        revpar: 68.99
     KpiDailyPoint:
       type: object
-      description: One day of KPIs. occupancy/RevPAR against ASSUMED capacity.
+      description: One day of kpi_daily for one property.
       required:
         - date
         - room_nights
@@ -947,19 +905,23 @@ components:
           format: date
         room_nights:
           type: integer
+          description: Room-nights sold that day (non-canceled bookings).
         revenue:
           type: number
+          description: adr × nights, non-canceled only.
         occupancy:
           type: number
-          description: >-
-            room_nights/room_count, 0-1 ratio (numeric 5,4), assumed capacity.
+          description: |
+            room_nights / room_count — 0-1 ratio (no ×100) against ASSUMED
+            capacity (190 / 230 rooms), not measured.
         adr:
           type: number
           nullable: true
-          description: revenue/room_nights; null on zero-activity days.
+          description: revenue / room_nights; null on zero-activity days.
         revenue_per_available_room:
           type: number
-          description: revenue/room_count, assumed capacity.
+          description: >-
+            revenue / room_count (ASSUMED capacity, not measured).
     KpiDailyPage:
       type: object
       required: [data, meta]
@@ -969,21 +931,25 @@ components:
           items:
             $ref: "#/components/schemas/KpiDailyPoint"
         meta:
-          $ref: "#/components/schemas/PageMeta"
+          $ref: "#/components/schemas/PaginationMeta"
     ChannelMixItem:
       type: object
+      description: |
+        Aggregates per market_segment (8 CSV values). No named-OTA
+        breakdown: agent/company are unmapped numeric IDs.
       required: [market_segment, bookings, revenue, share]
       properties:
         market_segment:
           type: string
-          description: One of the 8 CSV market segments.
         bookings:
           type: integer
+          description: Valid bookings in the segment.
         revenue:
           type: number
+          description: Realized revenue in the segment.
         share:
           type: number
-          description: Share of bookings, 0-1.
+          description: Fraction of valid bookings in the segment (0-1, rounded).
     ChannelMixList:
       type: object
       required: [data]
@@ -994,8 +960,9 @@ components:
             $ref: "#/components/schemas/ChannelMixItem"
     SeasonalityPoint:
       type: object
-      description: >-
-        Month-of-year average (2015/2017 partial years; never raw totals).
+      description: |
+        Averages per month-of-year (never raw monthly totals: 2015 and 2017
+        are partial years).
       required: [month, avg_adr, avg_occupancy, avg_revenue]
       properties:
         month:
@@ -1004,11 +971,19 @@ components:
           maximum: 12
         avg_adr:
           type: number
+          description: >-
+            Average ADR of valid bookings arriving in this
+            month-of-year.
         avg_occupancy:
           type: number
-          description: 0-1 ratio, ASSUMED capacity.
+          description: |
+            Average daily occupancy in this month-of-year, 0-1 ratio against
+            ASSUMED capacity (190 / 230 rooms) — not measured.
         avg_revenue:
           type: number
+          description: >-
+            Average realized daily revenue per property in this
+            month-of-year.
     SeasonalityList:
       type: object
       required: [data]
@@ -1017,12 +992,15 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SeasonalityPoint"
+          minItems: 12
+          maxItems: 12
     ReviewSummary:
       type: object
       description: |
-        Reputation KPIs from reviews ONLY. Real guest scores 1–5 (weak labels),
-        not model output. Link to bookings asserted at property level, not
-        factual.
+        Reputation KPIs from the TripAdvisor corpus ONLY. The link to
+        bookings is ASSERTED at property level, not factual. Scores are real
+        guest scores (1-5, one decimal) used as weak labels — not model
+        output.
       required:
         - property_id
         - count
@@ -1036,26 +1014,41 @@ components:
         property_id:
           type: integer
           nullable: true
-          description: null = both properties.
+          enum: [1, 2, null]
+          description: 1 = Buby Lago, 2 = Buby Montagna, null = both.
         count:
           type: integer
+          description: Number of reviews.
         overall:
           type: number
+          minimum: 1
+          maximum: 5
         cleanliness:
           type: number
+          minimum: 1
+          maximum: 5
         value:
           type: number
+          minimum: 1
+          maximum: 5
         location:
           type: number
+          minimum: 1
+          maximum: 5
         rooms:
           type: number
+          minimum: 1
+          maximum: 5
         sleep_quality:
           type: number
+          minimum: 1
+          maximum: 5
     Review:
       type: object
       description: |
-        TripAdvisor review. No sentiment/topics fields: model output lives in a
-        derived table (ADR 0003 §3), never on the source row.
+        A real public TripAdvisor review. property_id is an ASSERTED
+        mapping (no FK to bookings). NO sentiment/topics fields: model
+        output lives in a derived table (ADR 0003 §3, D14).
       required:
         - id
         - property_id
@@ -1076,42 +1069,58 @@ components:
           type: integer
         property_id:
           type: integer
+          enum: [1, 2]
         ta_hotel_id:
           type: integer
+          description: Denormalized TripAdvisor hotel id of the source row.
         post_date:
           type: string
           format: date
         stay_year:
           type: integer
           nullable: true
+          description: Year only — not enough for a monthly trend.
         overall:
           type: number
           nullable: true
+          minimum: 1
+          maximum: 5
         cleanliness:
           type: number
           nullable: true
+          minimum: 1
+          maximum: 5
         value:
           type: number
           nullable: true
+          minimum: 1
+          maximum: 5
         location:
           type: number
           nullable: true
+          minimum: 1
+          maximum: 5
         rooms:
           type: number
           nullable: true
+          minimum: 1
+          maximum: 5
         sleep_quality:
           type: number
           nullable: true
+          minimum: 1
+          maximum: 5
         title:
           type: string
           nullable: true
         body:
           type: string
           nullable: true
+          description: Review text — input of the NLP pipeline (D14).
         lang:
           type: string
           nullable: true
-          description: Corpus label, e.g. __label__en.
+          description: Corpus language label, e.g. __label__en.
     ReviewPage:
       type: object
       required: [data, meta]
@@ -1121,11 +1130,10 @@ components:
           items:
             $ref: "#/components/schemas/Review"
         meta:
-          $ref: "#/components/schemas/PageMeta"
+          $ref: "#/components/schemas/PaginationMeta"
     Booking:
       type: object
-      description: >-
-        One deduplicated CSV booking row. nights = weekend + week nights.
+      description: One deduplicated CSV booking (canceled or not).
       required:
         - id
         - property_id
@@ -1147,13 +1155,16 @@ components:
           type: integer
         property_id:
           type: integer
+          enum: [1, 2]
         arrival_date:
           type: string
           format: date
         nights:
           type: integer
+          description: Generated by Postgres — weekend + week nights.
         adr:
           type: number
+          description: Average daily rate per night.
         is_canceled:
           type: boolean
         adults:
@@ -1165,17 +1176,19 @@ components:
         country:
           type: string
           nullable: true
-          description: ISO code, not personal data.
+          description: 3-letter country code, not PII.
         customer_type:
           type: string
         market_segment:
           type: string
+          description: One of the 8 CSV market segments.
         distribution_channel:
           type: string
         deposit_type:
           type: string
         lead_time:
           type: integer
+          description: Days between booking and arrival.
     BookingPage:
       type: object
       required: [data, meta]
@@ -1185,12 +1198,13 @@ components:
           items:
             $ref: "#/components/schemas/Booking"
         meta:
-          $ref: "#/components/schemas/PageMeta"
+          $ref: "#/components/schemas/PaginationMeta"
     GuestRequest:
       type: object
       description: |
-        SYNTHETIC guest email. category/draft_reply are assistant OUTPUT (null
-        until D15). true_category/true_urgency never appear (anti-leakage).
+        A SYNTHETIC guest email (generator DA-3) — not real correspondence.
+        category and draft_reply are assistant OUTPUT (D15): null until the
+        classifier/LLM runs. A human approves before send (D20).
       required:
         - id
         - property_id
@@ -1204,19 +1218,24 @@ components:
           type: integer
         property_id:
           type: integer
+          enum: [1, 2]
         received_at:
           type: string
           format: date-time
         body:
           type: string
+          description: Synthetic email text.
         category:
           type: string
           nullable: true
-          description: Assistant output; null until D15.
+          description: |
+            Assistant output (null until D15). One of 6 categories:
+            availability, cancellation, complaint, special_request,
+            billing, info.
         draft_reply:
           type: string
           nullable: true
-          description: Assistant draft or human edit; null until D15.
+          description: Assistant-drafted reply (null until D15); human-editable.
         status:
           type: string
           enum: [new, draft, sent]
@@ -1229,10 +1248,11 @@ components:
           items:
             $ref: "#/components/schemas/GuestRequest"
         meta:
-          $ref: "#/components/schemas/PageMeta"
+          $ref: "#/components/schemas/PaginationMeta"
     GuestRequestUpdate:
       type: object
-      description: Human-in-the-loop approve/edit/send.
+      description: Partial update — send at least one of status / draft_reply.
+      minProperties: 1
       properties:
         status:
           type: string
@@ -1248,16 +1268,21 @@ components:
           format: email
         password:
           type: string
+          format: password
     LoginResponse:
       type: object
+      description: >-
+        JWT issuance is implemented in D11; only the shape is frozen
+        here.
       required: [access_token, token_type, role]
       properties:
         access_token:
           type: string
+          description: JWT bearer token.
         token_type:
           type: string
           enum: [bearer]
         role:
           type: string
-          description: admin | manager | property_manager (issuance is D11).
           enum: [admin, manager, property_manager]
+          description: Role per ADR 0001.

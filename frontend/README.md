@@ -31,10 +31,11 @@ bearer token; real JWT issuance is D11.
 
 ## Mock contract
 
-`mock/openapi.yaml` is the D6 copy of the pinned API contract v1
-(`docs/data-dictionary.md` §3 baseline). It syncs with the canonical root
-`openapi.yaml` (D5) at integration — field names, types and baseline examples
-are binding.
+`mock/openapi.yaml` is a synced copy of the canonical root `openapi.yaml` (D5,
+contract v1 — `docs/data-dictionary.md` §3 baseline). The root spec is the single
+source of truth: after any contract change regenerate this copy from it
+(`cp ../openapi.yaml mock/openapi.yaml`). Field names, types and baseline
+examples are binding.
 
 Disclosures (also shown in the dashboard footer): occupancy/RevPAR use assumed
 capacity (190/230 rooms, not measured); the reviews↔bookings link is asserted
