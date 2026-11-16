@@ -5,7 +5,11 @@ Self-contained: runs against the Prism mock without the backend.
 
 ## Run the demo
 
+All npm commands live here in `frontend/`, not at the repo root (there is no
+root package.json).
+
 ```bash
+cd frontend
 npm install
 npm run demo        # Prism mock on :4010 + Vite dev server on :5173
 ```
