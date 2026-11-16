@@ -20,6 +20,11 @@ un KPI non è in §3, non va pubblicato finché non ci finisce.
 | `guest_requests` | generatore sintetico (DA-3) | no | email generate, non reali |
 | `kpi_daily` | calcolata da `bookings` | derivata | — |
 
+> Il file arricchito a 34 colonne in `mock-db/` (25 testi di recensione distinti,
+> email per riga) è **superato da ADR 0003 opzione E**: resta solo locale, non si
+> committa e non si usa per nessun KPI. La deduplica corretta è sulle 32 colonne
+> originali (Assunzione 4).
+
 ### Assunzione 1 — i due hotel sono fittizi
 
 Il CSV contiene due tipi di struttura, non due hotel con nome:
@@ -68,6 +73,22 @@ qualsiasi KPI. La deduplica su 34 colonne dà numeri diversi da quella su 32
 25,99 M€ invece di 105,20 €/notte e 22,98 M€. **Riferimento: deduplica sulle
 colonne originali.**
 
+### Assunzione 5 — pulizia del CSV (decisioni solo-dataset, 2026-11-16)
+
+Regole applicate da `data/etl/load_bookings.py`, tutte riflesse nel baseline:
+
+- **Deduplica sulle 32 colonne originali**, prima di aggiungere/rinominare colonne
+  (mai dopo: è la trappola del file arricchito a 34 colonne).
+- **NA di pandas default:** i letterali `NA` (4 in `children`) e `NULL`
+  (`agent`/`company`/`country`) diventano NaN automaticamente; non si passa
+  `keep_default_na=False`. `children`/`babies` NaN → 0.
+- **`adults=0` si tengono** (385 post-dedup): il filtro baseline non li esclude;
+  toglierli rompe il baseline.
+- **Nessun clipping di `adr`:** il typo 5400,0 è su una riga `is_canceled=1`, non
+  entra mai in un KPI; clippare o no dà lo stesso ricavo (verificato). `adr` si
+  salva così com'è. Correzione a delivery-plan §10.
+- `agent`/`company` NaN → NULL nel DB (non la stringa "nan").
+
 ---
 
 ## 2. Tabelle e campi
@@ -81,7 +102,7 @@ colonne originali.**
 | `hotel_type` | varchar(50) | no | valore della colonna `hotel` del CSV. **Non** unique: due strutture possono essere entrambe "City Hotel" |
 | `location_type` | varchar(20) | no | `lake` o `mountain` (CHECK) |
 | `room_count` | integer | no | capacità assunta (Assunzione 3), non misurata |
-| `ta_hotel_id` | bigint | **sì** | hotel TripAdvisor scelto da DA-2 (ADR 0003 §1). Unique. Nullo finché non viene scelto; si sceglie una volta e non si cambia dopo il SAL 1 |
+| `ta_hotel_id` | bigint | **sì** | hotel TripAdvisor (ADR 0003 §1). Unique. Scelto una volta, immutabile dopo il SAL 1: vedi «Decisione TripAdvisor» |
 
 ### `bookings` — una riga del CSV, non cancellata o cancellata
 
@@ -139,6 +160,33 @@ in una tabella derivata, così un re-run non deve fare `UPDATE` sulla sorgente.
 | `body` | text | sì | testo della recensione: input dell'NLP |
 | `lang` | varchar(20) | sì | ADR §3 dice `TEXT`; qui è `varchar(20)` perché i valori del corpus sono etichette `__label__xx` (max 12 caratteri). Se arriva un corpus con codici più lunghi, va allargato con una migrazione |
 
+### Decisione TripAdvisor — mapping scelto (ADR 0003 §1, 2026-11-16)
+
+I due `ta_hotel_id` sono scelti e **immutabili dopo il SAL 1**:
+
+| Proprietà | `ta_hotel_id` (offering_id) | Recensioni | `overall` medio |
+|---|---:|---:|---:|
+| Buby Lago (1) | 93618 | 762 | 3,86 |
+| Buby Montagna (2) | 2079052 | 876 | 4,40 |
+
+- **Regola di assegnazione (deterministica):** la struttura con più recensioni →
+  Buby Montagna (2), la seconda → Buby Lago (1). Il legame è **asserito**, non
+  fattuale (Assunzione 2).
+- **Correzione ad ADR 0003 / playbook §1:** nella distribuzione HF
+  `jniimi/tripadvisor-review-rating` la colonna `hotel_id` è in realtà l'id della
+  **recensione** (201.295 valori distinti su 201.295 righe), non dell'hotel. Il vero
+  id hotel (`offering_id`) si recupera da `review.txt` (Li et al. 2013) unendo su
+  `id`: risolve il 100% delle righe. Senza questo passo il mapping sarebbe impossibile.
+- **N reale = 1.638, non 20k:** le due strutture più recensite hanno 762 e 876
+  recensioni. Si prendono tutte (playbook §5.2: sotto 10k si prende tutto e si fissa
+  l'N reale). Campione committato: `data/raw/sample_tripadvisor.csv` (~1,6 MB, non
+  ~16 MB come stimato in ADR 0003).
+- **Corpus solo inglese:** tutte le 1.638 recensioni sono `__label__en`. Decisione:
+  si accetta l'inglese per la reputazione, la demo email resta italiana; niente
+  ABSITA per ora (ADR 0003 nomina entrambe le opzioni). Da dichiarare al SAL 1.
+- `review_id` (id recensione HF) è conservato solo nella CSV campione, non nel DB:
+  serve a ricostruire il mapping, non è un campo dello schema.
+
 ### `guest_requests` — email generate (DA-3)
 
 | Campo | Tipo | Null | Regola |
@@ -155,10 +203,26 @@ in una tabella derivata, così un re-run non deve fare `UPDATE` sulla sorgente.
 `data/eval/email_gold.csv`. Non vengono mai scritte nel database e mai lette
 dalla pipeline. Se finiscono qui, la valutazione diventa una tautologia.
 
+**Generatore (`data/etl/gen_emails.py`, seed 42):** 800 email italiane, 6 categorie
+(134/133/133/133/133/134), ≥8 template per categoria × slot (nomi, date, camere,
+proprietà, registro): i quasi-duplicati sono rari. È la lezione del postmortem
+2026-11-11 sul dataset arricchito, dove 25 testi distinti rendevano la valutazione
+una lookup table al 100%. Nomi/indirizzi inventati (GDPR, O1). Il DB riceve solo
+`property_id, received_at, body`; `category`/`draft_reply` restano NULL (output D15).
+Gli id del gold combaciano con `guest_requests.id` perché entrambi partono da
+TRUNCATE RESTART IDENTITY nello stesso run: se ricarichi le email, rigenera il gold.
+
 ### `kpi_daily` — KPI per hotel e per giorno
 
-Calcolata dalle prenotazioni non cancellate. Una sola riga per hotel e giorno
-(unique).
+Regola di calcolo fissata (playbook solo-dataset §4.1, 2026-11-16 — chiude P1-2).
+`kpi_daily` conta i **giorni di soggiorno** delle prenotazioni con `is_canceled=0
+AND nights>0 AND adr>0` (stesso filtro della baseline; i soggiorni ad ADR zero sono
+esclusi anche dall'occupazione — assunzione dichiarata). Per ognuna, ogni giorno
+`arrival_date … arrival_date+nights-1` contribuisce 1 room-night e `adr` di ricavo.
+Una sola riga per hotel e giorno (unique), per ogni giorno dell'intervallo osservato
+della proprietà, inclusi i giorni a zero. **Invariante:** sul dataset completo
+`Σ kpi_daily.revenue = 22.976.960,13 €` e `Σ room_nights = 218.410`
+(test: `data/tests/test_kpi_daily.py`).
 
 | Campo | Tipo | Null | Regola |
 |---|---|---|---|
@@ -166,8 +230,8 @@ Calcolata dalle prenotazioni non cancellate. Una sola riga per hotel e giorno
 | `property_id` | integer FK | no | |
 | `date` | date | no | |
 | `room_nights` | integer | no | notti vendute quel giorno |
-| `revenue` | numeric(10,2) | no | `adr × nights`, sole non cancellate |
-| `occupancy` | numeric(5,2) | no | `room_nights / room_count`. **Rapporto 0-1, senza ×100** (delivery-plan §6) |
+| `revenue` | numeric(10,2) | no | Σ `adr` delle camere occupate quel giorno (regola sopra), non `adr × nights` concentrato sull'arrivo |
+| `occupancy` | numeric(5,4) | no | `room_nights / room_count`. **Rapporto 0-1, senza ×100** (delivery-plan §6). 4 decimali: migrazione 0004 (con 2 si quantizzava a 1 punto percentuale) |
 | `adr` | numeric(8,2) | sì | `revenue / room_nights`, vuoto se quel giorno non c'era nessuno |
 | `revenue_per_available_room` | numeric(8,2) | no | `revenue / room_count` |
 
@@ -200,6 +264,20 @@ Dopo deduplica esatta (87.396 righe) e filtro `is_canceled=0, nights>0, adr>0`:
 | Cancellation (post-dedup) | 27,49% |
 
 Qualsiasi endpoint KPI che non restituisce questi numeri è sbagliato.
+
+**Campione committato** (`data/raw/sample_hotel_bookings.csv`, 5.000 righe dedup,
+`random_state=42`) — è quello che gira in CI (`data/tests/test_baseline.py`):
+
+| Metrica | Valore |
+|---|---:|
+| Righe | 5.000 |
+| Prenotazioni valide | 3.564 |
+| Room-nights | 12.696 |
+| Ricavo | 1.350.503,84 € |
+| Cancellation rate | 0,2696 |
+
+Il CSV completo (119.390 righe lorde) resta solo locale/drive del cliente: il suo
+test si salta in CI, ma il test sul campione gira sempre (niente falso verde, T-1).
 
 ---
 

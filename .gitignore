@@ -10,3 +10,12 @@ data/raw/*
 !data/raw/sample_*.csv
 
 .env
+
+# virtualenv: backend/.venv e' il venv reale; data/.venv e' un symlink locale per gli editor
+.venv
+
+# artefatti Python
+__pycache__/
+.pytest_cache/
+
+playbooks/

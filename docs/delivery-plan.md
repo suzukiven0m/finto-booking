@@ -71,7 +71,7 @@ The auditor showed the same metric swings 10-40% on definition alone. Every head
 | B3 | **Decide the reviews/text gap.** ✅ **Done 2026-11-13: ADR 0003 option E (`hotel_bookings.csv` + TripAdvisor), 6/6.** | All 6 | ADR 0003 says "Accettato" |
 | B4 | **Confirm data request was sent to client in writing.** | Team lead | Copy in `docs/` or client drive |
 | B5 | Scaffold monorepo skeleton + `docker-compose` up. | WSA-3 | `docker compose up` gives a reachable Postgres |
-| B6 | **Commit the dataset to `data/raw/`.** It exists only on `origin/fabio`, not on master. | DA-1 | `Datasets/hotel_bookings.csv` on master; nobody can seed without it |
+| B6 | **Commit the dataset to `data/raw/`.** 🟡 **Sample committed on `data-solo`** (`sample_hotel_bookings.csv`); full CSV stays local/client-drive per `.gitignore` policy. PR pending. | DA-1 → WSA-3 (solo) | `data/raw/sample_hotel_bookings.csv` on master after merge; a fresh clone can seed |
 
 ### B3 — the reviews/text decision ✅ **Decided 2026-11-13: option E**
 
@@ -136,6 +136,26 @@ Each is a thing a student codes, not a theme.
 | D18 | Deploy + docs + demo rehearsal | WSA-3 | Dec 17 |
 | D19 | Search/filter UI over bookings | WSA-2 | Dec 2 |
 | D20 | Guest-request inbox UI (approve / edit / send) | WSA-2 + DA-3 | Dec 4 |
+
+### Execution status — branch `data-solo` (2026-11-16)
+
+DA-1/DA-2/DA-3 deliverables were ownerless in practice (team unresponsive). WSA-3
+executed them solo per `docs/playbooks/solo-dataset.md`; every solo decision is
+logged in `docs/data-dictionary.md`. **On `data-solo`, PR pending — not on master
+until merged.** Verification is reproducible (`data/tests`, 12 tests, wired into CI).
+
+| ID | Status | Evidence |
+|---|---|---|
+| B6 | ✅ sample committed | `data/raw/sample_hotel_bookings.csv` (5,000 dedup rows, seed 42); full CSV local/client-drive per `.gitignore` policy |
+| D3 | ✅ done | `data/etl/load_bookings.py`: 87,396 rows loaded, dedup on the 32 original columns |
+| D4 | ✅ done | baseline exact: 61,777 valid · 218,410 room-nights · **€22,976,960.13** · ADR 105.20; sample baseline 5,000/3,564/12,696/€1,350,503.84 |
+| D7 (data half) | ✅ done | `data/etl/build_kpi_daily.py`: Σ revenue/room-nights match the baseline; occupancy `numeric(5,4)` (migration 0004). The KPI *engine/API* remains D7/D12 |
+| D8 | ✅ done | mapping chosen & immutable: 93618→Lago (762), 2079052→Montagna (876). **Correction:** HF `hotel_id` was the review id; the real `offering_id` is recovered from `review.txt`. **N=1,638, not 20k**; artifact `data/raw/sample_tripadvisor.csv` (~1.6 MB), not `tripadvisor_sample.csv` (~3 MB). All-English corpus accepted |
+| D9 | ✅ done | `data/etl/gen_emails.py`: 800 Italian emails, 6 categories, seed 42; gold only in `data/eval/email_gold.csv`, DB labels NULL (anti-leakage) |
+
+**Not addressed by this playbook (still SAL 1 blockers):** D5 OpenAPI and D10
+frontend shell — escalate separately. The two silent workstreams (DA-1, WSA-2)
+need formal reassignment at the next sync.
 
 **Deploy target (decide by Nov 13):** Render (API) + Vercel (SPA) + Neon (Postgres), free tiers. Free tiers sleep — **the demo runs on local `docker compose`, never on a cold-started free instance.** The public URL is for the report and grading; the live demo is local. Warm the deployed instance 10 minutes before any external check.
 

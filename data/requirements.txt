@@ -1,0 +1,5 @@
+# librerie degli script in data/: pip install -r data/requirements.txt
+# gli script girano con il venv del backend (PYTHONPATH=backend), vedi
+# docs/playbooks/solo-dataset.md §2. versioni fissate come in backend/requirements.txt.
+pandas==3.1.1
+psycopg[binary]==3.3.9
