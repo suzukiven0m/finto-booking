@@ -20,21 +20,26 @@ reviewer → fix → merge; audit backlog `2026-11-19-shepherd-audit.md`).
 - Live DB `buby` at 0005, seeded, baseline exact (61777/218410/€22976960.13/105.20/0.2749).
 - Tagged-master suite green: backend 28+1skip, data 12, frontend 3+tsc+build, lint, mirror.
 
-## IN FLIGHT at pause (async subagents — check status first thing on resume)
+## IN FLIGHT (updated after runner crash ~17:12 and recovery ~17:40)
 
-1. **WP7 reviewer** run `da18f6ea-e68a-48c5-a0b7-8e5c2ce8243c` (agent reviewer, read-only, no shell).
+Both original runners died while the operator was away (stale-run reconciliation).
+Recovery: WP7 reviewer RESUMED (context preserved); WP9 resume had no handoff record
+(children: []) → fresh worker launched IN THE SAME WORKTREE with a checkpoint brief
+(partial code survives uncommitted; crash-resilient nohup+incremental-checkpoint pattern mandated).
+
+1. **WP7 reviewer** run `0473b42b-6f17-43d9-b6d5-2e90000759c5` (resume of da18f6ea; agent reviewer, read-only, no shell).
    Object: PR **#18** `fix/wp7-real-auth` @ `86edd28` (real JWT, 48+1skip backend, 13 frontend).
    Orchestrator execution gate ALREADY GREEN (tampered/expired/alg-none/wrong-creds → 401;
    baseline unchanged; data 12 with raw mount; lint clean). On APPROVE: sign-off comment +
    `gh pr merge 18 --admin --merge` (protocol below), then launch WP8.
    Artifact: ~/.pi/agent/sessions/--home-suzuki-code-finto-booking--/subagent-artifacts/da18f6ea-*_reviewer_output.md
-2. **WP9 builder** run `38ccb643-7497-4acb-b814-b8ad113787fb` (agent worker, WORKTREE
-   /home/suzuki/code/worktrees/finto-booking/pi-worktree-38ccb643-…-s0-0, branch fix/wp9-review-nlp).
+2. **WP9 builder** run `cefbefa1-4e20-4cc2-80ce-d69c505806b9` (fresh worker, cwd = WORKTREE
+   /home/suzuki/code/worktrees/finto-booking/pi-worktree-38ccb643-7497-4acb-b814-b8ad113787fb-s0-0, branch fix/wp9-review-nlp; replaces crashed 38ccb643).
    D14 review NLP: torch 2.9.1+cpu / transformers 4.57.6 installed in worktree .venv;
    models cached+pinned (cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual @82107f4,
    facebook/bart-large-mnli @d7645e1); was calibrating zero-shot thresholds then full 1,638-body run.
    On completion: extract branch, independent review (eval re-run!), merge via PR.
-   Check: `subagent({action:"status",id:"38ccb643",options:{view:"transcript",index:0}})`.
+   Check: `subagent({action:"status",id:"cefbefa1",options:{view:"transcript",index:0}})`.
 
 ## QUEUE (deadline order; briefs were given verbally — recreate from audit + prompt)
 
