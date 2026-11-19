@@ -197,6 +197,10 @@ I due `ta_hotel_id` sono scelti e **immutabili dopo il SAL 1**:
   ABSITA per ora (ADR 0003 nomina entrambe le opzioni). Da dichiarare al SAL 1.
 - `review_id` (id recensione HF) è conservato solo nella CSV campione, non nel DB:
   serve a ricostruire il mapping, non è un campo dello schema.
+- **Medie delle dimensioni verificate per esecuzione (2026-11-19, WP8a):** gli esempi
+  `reviews/summary` del contratto avevano le 5 dimensioni scritte a mano; corretti
+  pre-freeze alle medie reali del corpus (SQL su 1.638 righe, riscontro riga per riga
+  pickle→CSV→DB: 0 differenze). La tabella `overall` qui sopra è invariata: combacia.
 
 ### `guest_requests` — email generate (DA-3)
 
