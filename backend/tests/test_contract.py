@@ -401,9 +401,9 @@ def test_bookings_schema_ordine_e_meta(db):
     valida(body, "BookingPage")
     arrivi = [p["arrival_date"] for p in body["data"]]
     assert arrivi == sorted(arrivi)  # ordered by arrival_date
-    assert body["meta"]["total"] == db.execute(
-        select(func.count()).select_from(Booking)
-    ).scalar_one()
+    assert (
+        body["meta"]["total"] == db.execute(select(func.count()).select_from(Booking)).scalar_one()
+    )
     campi = set(SPEC["components"]["schemas"]["Booking"]["properties"])
     for p in body["data"]:
         assert set(p) == campi
@@ -446,9 +446,10 @@ def test_guest_requests_schema_ordine_e_meta(db):
     valida(body, "GuestRequestPage")
     ricevuti = [p["received_at"] for p in body["data"]]
     assert ricevuti == sorted(ricevuti, reverse=True)  # newest first by received_at
-    assert body["meta"]["total"] == db.execute(
-        select(func.count()).select_from(GuestRequest)
-    ).scalar_one()
+    assert (
+        body["meta"]["total"]
+        == db.execute(select(func.count()).select_from(GuestRequest)).scalar_one()
+    )
     campi = set(SPEC["components"]["schemas"]["GuestRequest"]["properties"])
     for p in body["data"]:
         # urgency (0005) non e' nel contratto: mai esposta
@@ -597,9 +598,7 @@ def test_patch_property_manager_403(riga_guest):
 @pytest.mark.parametrize("token_spazzatura", [None, "patacca"])
 def test_patch_401(riga_guest, token_spazzatura):
     headers = {} if token_spazzatura is None else {"Authorization": f"Bearer {token_spazzatura}"}
-    r = client.patch(
-        f"/api/guest-requests/{riga_guest}", json={"status": "draft"}, headers=headers
-    )
+    r = client.patch(f"/api/guest-requests/{riga_guest}", json={"status": "draft"}, headers=headers)
     assert r.status_code == 401
     assert r.json() == ENVELOPE_401
     valida(r.json(), "Error")

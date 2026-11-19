@@ -223,14 +223,11 @@ def kpi_seasonality(
         )
         capacita = select(func.sum(Property.room_count)).scalar_subquery()
         mese = cast(func.extract("month", per_data.c.date), Integer)
-        stmt_giorni = (
-            select(
-                mese,
-                func.avg(cast(per_data.c.notti, Numeric) / capacita),
-                func.avg(per_data.c.incassi) / 2,
-            )
-            .group_by(mese)
-        )
+        stmt_giorni = select(
+            mese,
+            func.avg(cast(per_data.c.notti, Numeric) / capacita),
+            func.avg(per_data.c.incassi) / 2,
+        ).group_by(mese)
 
     with Session(engine) as session:
         adr_per_mese = dict(session.execute(stmt_adr).all())
