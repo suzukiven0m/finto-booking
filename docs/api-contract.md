@@ -11,16 +11,27 @@ root (OpenAPI 3.0.3, `info.version: 1.0.0`). It freezes at SAL 1
 - **Servers:** `http://localhost:8000` (real FastAPI, D12) and
   `http://localhost:4010` (Prism mock, D6).
 - **Auth:** global `bearerAuth` (HTTP bearer, JWT). Roles: `admin`,
-  `manager`, `property_manager` (ADR 0001). Only the scheme is frozen at
-  SAL 1; issuance and enforcement are D11 (WP7). **Gap disclosed (audit §4):
-  today the implemented secured endpoints accept any token or none** — the
-  frozen spec promises 401s the implementation does not yet enforce.
-  `/api/properties` and `/api/auth/login` set `security: []` for the demo.
-  **Role matrix (fixed pre-freeze 2026-11-19, operator-approved;
-  implementation D11):** all three roles may read every secured GET — no
-  property-scoping of reads in v1; WRITE on guest-requests
-  (`PATCH /api/guest-requests/{id}`) requires `admin` or `manager`;
-  `property_manager` receives the declared `Forbidden` (403) envelope.
+  `manager`, `property_manager` (ADR 0001). **Enforcement implemented
+  (D11/WP7, 2026-11-19):** `POST /api/auth/login` validates credentials
+  against the demo users and issues an HS256 JWT (claims `sub`, `role`,
+  `exp`; 8 h expiry); wrong/unknown credentials answer 401
+  `invalid_credentials` per the login example. Secured routes answer the
+  `Unauthorized` (401) envelope without a token or with a
+  missing/malformed/expired/invalid one. `/api/properties` and
+  `/api/auth/login` stay open (`security: []`).
+  **Role matrix (fixed pre-freeze 2026-11-19, operator-approved):** all
+  three roles may read every secured GET — no property-scoping of reads
+  in v1; WRITE on guest-requests (`PATCH /api/guest-requests/{id}`)
+  requires `admin` or `manager`, enforced by the `require_write_role`
+  dependency (`property_manager` receives the declared `Forbidden` 403
+  envelope); PATCH enforcement lands with the operation in WP8.
+  **Demo users (S7: no users table in v1), hardcoded in
+  `backend/app/config.py`:** `admin@buby.travel`, `manager@buby.travel`,
+  `property.manager@buby.travel` — password `demo` for all three. These
+  passwords and the dev-default JWT secret (`buby-dev-jwt-secret`,
+  overridable via the `JWT_SECRET` env var) are **published dev defaults,
+  NOT secrets**. A real users table later = contract-bump protocol (new
+  ADR + `info.version` bump + dedicated migration).
 - **Pagination** (list endpoints): query `page` (int, default 1, min 1)
   and `page_size` (int, default 50, min 1, max 200). Envelope:
   `{ "data": [...], "meta": { page, page_size, total, total_pages } }`.

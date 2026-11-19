@@ -363,7 +363,8 @@ O1 is the one with legal weight. Pseudonymize guest emails before they touch the
 | 1 | D16 demand forecast | Brief calls predictive modelling "eventuale" (optional) |
 | 2 | D20 guest-request inbox UI | The classifier can be shown via API/notebook; UI is polish |
 | 3 | D19 search / filter UI | Dashboard already proves the brief's "visualizzazioni" |
-| 4 | D11 auth | Demo does not need a login wall; adds nothing to grading |
+
+D11 implemented WP7 2026-11-19: auth is not cuttable (brief-named «autenticazione», operator decision 2026-11-19, HA-14); the former cut-order #4 row is struck.
 
 **Never cut:** D12/D7 (KPI), D14 (NLP), D15 (classifier), D17 (real data), D18 (deploy). Those are the graded minimum — the brief's "almeno una componente di analisi e una di elaborazione testi".
 

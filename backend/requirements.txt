@@ -7,6 +7,7 @@ psycopg[binary]==3.3.9
 # api
 fastapi==0.163.1
 uvicorn==0.54.0
+PyJWT==2.10.1  # JWT sign/verify e' un trust boundary: niente crypto fatta a mano
 
 # test
 pytest==9.2.0
