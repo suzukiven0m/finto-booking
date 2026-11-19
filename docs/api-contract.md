@@ -16,6 +16,11 @@ root (OpenAPI 3.0.3, `info.version: 1.0.0`). It freezes at SAL 1
   today the implemented secured endpoints accept any token or none** — the
   frozen spec promises 401s the implementation does not yet enforce.
   `/api/properties` and `/api/auth/login` set `security: []` for the demo.
+  **Role matrix (fixed pre-freeze 2026-11-19, operator-approved;
+  implementation D11):** all three roles may read every secured GET — no
+  property-scoping of reads in v1; WRITE on guest-requests
+  (`PATCH /api/guest-requests/{id}`) requires `admin` or `manager`;
+  `property_manager` receives the declared `Forbidden` (403) envelope.
 - **Pagination** (list endpoints): query `page` (int, default 1, min 1)
   and `page_size` (int, default 50, min 1, max 200). Envelope:
   `{ "data": [...], "meta": { page, page_size, total, total_pages } }`.
