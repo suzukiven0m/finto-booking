@@ -10,7 +10,7 @@ quanto segue.
 
 Buongiorno,
 
-stato settimanale in vista del SAL 1 di domani (ven 20 nov), dove congeliamo
+stato settimanale in vista del SAL 1 (ven 20 nov), dove congeliamo
 schema e contratto API con voi presenti.
 
 **Gap riconosciuto:** lo stato del 13 nov non risulta inviato/archiviato
@@ -54,11 +54,11 @@ contratto (properties, kpis/summary, kpis/daily, auth/login) verificate su dati
 reali contro gli esempi del contratto — token finto fino a D11; login UI
 mergiata (PR #10); dashboard ancora sul mock Prism fino allo swap D17.
 
-**Domani al SAL 1:** freeze di schema (0001–0005) + contratto (1.0.0) con
+**Al SAL 1 (ven 20 nov):** freeze di schema (0001–0005) + contratto (1.0.0) con
 sign-off del catalogo KPI da parte di entrambi i team, disclosure complete e
 tag v1.0.0. Restano da implementare le altre 7 operazioni, l'NLP (D14/D15,
-componente obbligatoria), l'auth reale (D11), lo swap su dati reali (D17) e il
-deploy.
+componente obbligatoria), l'auth reale (D11), lo swap su dati reali (D17), il
+deploy e il forecast (stretch).
 
 ---
 

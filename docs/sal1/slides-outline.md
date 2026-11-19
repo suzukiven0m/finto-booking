@@ -280,6 +280,9 @@ cliente li scopra (audit §3 S4, §8.4):
 - **D14/D15 NLP — componente obbligatoria del brief, oggi zero codice:**
   sentiment/topics/sintesi sulle 1.638 recensioni reali; classificatore email +
   bozze LLM human-in-the-loop sul gold file. Owner nominato per D14 per primo.
+- **D16 forecast** — oggi zero codice, stretch per delivery-plan §11; la
+  contraddizione con l'obiettivo del caso «prevedere la domanda» va risolta col
+  cliente al SAL 1 (HA-14, memo WP12).
 - **D17 swap mock → reale** + E2E (la headline WSA «integrazione con i dati
   reali»): la dashboard lascia Prism, weekly real-data smoke da subito.
 - **Deploy (D18)** + demo finale 18 dic con 2 rehearsal; demo live in locale,
@@ -289,7 +292,7 @@ cliente li scopra (audit §3 S4, §8.4):
   collaborazione è a rischio; (2) **O2 chiavi LLM e chi paga: decisione scaduta
   il 16 nov** (HA-05), blocca D15 e i secret di deploy. Aperti anche O1/O3/B4
   (HA-06/07/09) e il gap O5 del 13 nov (HA-02, riconosciuto nello stato da inviare).
-- Fonte: audit §5/§8; delivery-plan §2/§9/§11; ledger HA-02/04/05/14.
+- Fonte: audit §5/§6/§8; delivery-plan §2/§9/§11; ledger HA-02/04/05/14.
 
 ---
 
