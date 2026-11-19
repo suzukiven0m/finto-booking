@@ -16,7 +16,11 @@ def test_emails_800_senza_label_nel_db(conn):
     leak = conn.execute(
         select(func.count())
         .select_from(GuestRequest)
-        .where(GuestRequest.category.is_not(None) | GuestRequest.draft_reply.is_not(None))
+        .where(
+            GuestRequest.category.is_not(None)
+            | GuestRequest.urgency.is_not(None)
+            | GuestRequest.draft_reply.is_not(None)
+        )
     ).scalar()
     assert leak == 0
     not_new = conn.execute(

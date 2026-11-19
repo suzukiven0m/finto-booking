@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
 import pytest
-from sqlalchemy import func, insert, inspect, select
+from sqlalchemy import String, func, insert, inspect, select
 from sqlalchemy.exc import IntegrityError
 
 from app.models import Booking, GuestRequest, Property
@@ -81,8 +81,8 @@ def test_reviews_legano_per_proprieta_non_per_prenotazione(conn):
 
 
 def test_reviews_non_contiene_output_del_modello(conn):
-    # sentiment e topics sono output di D14, non dati di TripAdvisor: stanno
-    # in una tabella derivata, non nella sorgente
+    # sentiment e topics sono output di D14, non dati di TripAdvisor: in v1 si
+    # calcolano al momento della query (decisione pre-freeze 2026-11-19, audit S8)
     colonne = {c["name"] for c in inspect(conn).get_columns("reviews")}
     assert not colonne & {"sentiment", "topics", "booking_id", "reviewer_nationality"}
 
@@ -135,4 +135,20 @@ def test_ogni_foreign_key_ha_un_indice(conn):
 def test_i_vocabolari_chiusi_rifiutano_spazzatura(conn, tabella, valori):
     with pytest.raises(IntegrityError):
         conn.execute(insert(tabella).values(**valori))
+    conn.rollback()
+
+
+def test_guest_requests_urgency_nullable_varchar10_e_check(conn):
+    # 0005 (audit S8): casa pre-freeze per l'urgenza classificata da D15.
+    # NULL finche' D15 non la produce, come category/draft_reply.
+    colonna = next(c for c in inspect(conn).get_columns("guest_requests") if c["name"] == "urgency")
+    assert colonna["nullable"] is True
+    assert isinstance(colonna["type"], String)
+    assert colonna["type"].length == 10
+    base = {"property_id": 1, "received_at": datetime.now(UTC), "body": "x"}
+    for urgency in ("low", "medium", "high"):
+        conn.execute(insert(GuestRequest).values(**base, urgency=urgency))
+        conn.rollback()  # niente righe di test nel DB seedato
+    with pytest.raises(IntegrityError):
+        conn.execute(insert(GuestRequest).values(**base, urgency="urgent"))
     conn.rollback()

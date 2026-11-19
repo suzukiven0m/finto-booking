@@ -144,8 +144,10 @@ ricavano.
 ### `reviews` — corpus TripAdvisor (ADR 0003 §3)
 
 Nessuna FK verso `bookings`. Il legame è `property_id`, asserito (Assunzione 2).
-`sentiment` e `topics` **non stanno qui**: sono output del modello (D14) e vanno
-in una tabella derivata, così un re-run non deve fare `UPDATE` sulla sorgente.
+`sentiment` e `topics` **non stanno qui**: sono output del modello (D14) e in v1
+si calcolano **al momento della query** (decisione pre-freeze 2026-11-19, sotto):
+niente tabelle derivate, così un re-run del modello non deve fare `UPDATE` sulla
+sorgente.
 
 | Campo | Tipo | Null | Regola |
 |---|---|---|---|
@@ -196,21 +198,47 @@ I due `ta_hotel_id` sono scelti e **immutabili dopo il SAL 1**:
 | `received_at` | timestamptz | no | |
 | `body` | text | no | testo dell'email |
 | `category` | varchar(50) | sì | 6 categorie: `availability`, `cancellation`, `complaint`, `special_request`, `billing`, `info` |
+| `urgency` | varchar(10) | sì | `low`, `medium`, `high` (CHECK, migrazione 0005). NULL finché D15 non la produce, come `category`/`draft_reply` |
 | `draft_reply` | text | sì | bozza prodotta dall'assistente |
 | `status` | varchar(20) | no | `new`, `draft`, `sent` (CHECK), default `new` |
 
 **Anti-leakage:** `true_category` e `true_urgency` vivono solo in
 `data/eval/email_gold.csv`. Non vengono mai scritte nel database e mai lette
 dalla pipeline. Se finiscono qui, la valutazione diventa una tautologia.
+La colonna `urgency` (0005) è l'output **predetto** da D15, non l'etichetta gold:
+la regola anti-leakage vale anche per lei.
 
 **Generatore (`data/etl/gen_emails.py`, seed 42):** 800 email italiane, 6 categorie
 (134/133/133/133/133/134), ≥8 template per categoria × slot (nomi, date, camere,
 proprietà, registro): i quasi-duplicati sono rari. È la lezione del postmortem
 2026-11-11 sul dataset arricchito, dove 25 testi distinti rendevano la valutazione
 una lookup table al 100%. Nomi/indirizzi inventati (GDPR, O1). Il DB riceve solo
-`property_id, received_at, body`; `category`/`draft_reply` restano NULL (output D15).
+`property_id, received_at, body`; `category`/`urgency`/`draft_reply` restano NULL
+(output D15).
 Gli id del gold combaciano con `guest_requests.id` perché entrambi partono da
 TRUNCATE RESTART IDENTITY nello stesso run: se ricarichi le email, rigenera il gold.
+
+### Decisioni pre-freeze 2026-11-19 — auth e output NLP (audit S7/S8)
+
+Fissate il giorno prima del freeze (SAL 1, 2026-11-20). Sorgente: audit
+`docs/reviews/2026-11-19-shepherd-audit.md` §3; seguito anche in ADR 0001.
+
+- **S7 — niente tabella `users` in v1.** Lo schema congelato ha 5 tabelle,
+  nessuna per gli utenti. Gli utenti demo saranno hardcoded in
+  `backend/app/config.py` al momento di D11, con i 3 ruoli di ADR 0001:
+  `admin`, `manager`, `property_manager`. L'emissione dei JWT è D11: qui si
+  fissa solo la decisione di schema, l'autenticazione non è implementata. Una
+  tabella `users` vera più avanti richiede il protocollo di contract-bump:
+  nuovo ADR + bump di `info.version` in `openapi.yaml` + migrazione dedicata.
+- **S8 — output NLP al momento della query.** Sentiment, topics e sintesi delle
+  recensioni (D14) si calcoleranno quando la query li chiede: nessuna tabella
+  derivata in v1, nessun `UPDATE` sulla sorgente a ogni re-run del modello
+  (delivery-plan §4 lo consente esplicitamente). Persistere gli output in
+  tabelle dedicate più avanti = stesso protocollo di contract-bump: nuovo ADR +
+  bump di `info.version` + migrazione. L'urgenza delle email ha invece la sua
+  colonna `guest_requests.urgency` (migrazione 0005, sopra): il gold file valuta
+  `true_urgency`, quindi all'output serve una casa nello schema prima del
+  freeze. Resta NULL finché D15 non la produce.
 
 ### `kpi_daily` — KPI per hotel e per giorno
 

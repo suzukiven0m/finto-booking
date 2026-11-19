@@ -6,7 +6,7 @@ Decisions live in `docs/adr/`, the working plan in `docs/plan.md` and `docs/deli
 ## Status
 
 Done and verified:
-- Postgres schema v1: 5 tables, migrations 0001-0004, schema tests (`backend/`)
+- Postgres schema v1: 5 tables, migrations 0001-0005, schema tests (`backend/`)
 - Data pipeline: bookings, TripAdvisor reviews, 800 synthetic emails, daily KPIs (`data/etl/`)
 - OpenAPI v1 contract: `openapi.yaml` (single source of truth, mirrored in `frontend/mock/`)
 - Dashboard shell (D10) running on the Prism mock (D6), see `frontend/README.md`
