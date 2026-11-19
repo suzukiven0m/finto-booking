@@ -251,6 +251,39 @@ definizione. Queste sono le regole vincolanti.
 | Channel mix | per `market_segment` (8 valori) | `agent`/`company` sono ID numerici non mappati: nessuna disaggregazione per OTA con nome |
 | Occupancy / RevPAR | contro la capacità assunta (§1, Assunzione 3) | **mai** presentata come misurata |
 
+### Finestra e aggregazione — riepilogo vs giornaliero (audit 2026-11-19, S1/S2/S3)
+
+Regole fissate anche nel contratto (`openapi.yaml`: getKpiSummary, getKpiDaily,
+getKpiSeasonality):
+
+- **`occupancy_avg` (riepilogo)**: formula pooled
+  `Σroom_nights / (Σroom_count × giorni della finestra)`, **non** la media dei
+  rapporti giornalieri. I giorni della finestra sono le date distinte richieste
+  (793 sulla finestra completa di default); `Σroom_count` è 190 o 230 per
+  proprietà, 420 per entrambe. Esempio fissato: 218.410 / (420 × 793) = 0,6558
+  (la media dei rapporti giornalieri darebbe 0,6534: definizione da non usare).
+- **Riepilogo = coorte di arrivi**: filtra `bookings.arrival_date` in
+  `[date_from, date_to]`, estremi inclusi. Un soggiorno che arriva nella finestra
+  contribuisce con tutte le sue notti, anche quelle oltre `date_to`.
+- **Giornaliero = giorni di soggiorno**: legge `kpi_daily.date`;
+  `date_from`/`date_to` filtrano la data di soggiorno, non l'arrivo.
+- Ai bordi dell'intervallo i totali **differiscono per progetto**: con la finestra
+  di default, 19 giorni di soggiorno oltre il 2017-08-31 (723 room-nights,
+  105.263,50 €) entrano nel riepilogo ma restano fuori dalla serie giornaliera.
+  La baseline pulita qui sotto resta il riferimento del riepilogo sulla finestra
+  completa.
+- **Giornaliero con `property_id` omesso/null**: una sola riga per data, somma
+  delle due proprietà (`room_nights` e `revenue` sommati); `occupancy` e
+  `revenue_per_available_room` contro la capacità combinata di 420 camere;
+  `adr` = revenue sommato / room_nights sommati, null quando sono zero.
+- **Stagionalità — `avg_adr`**: ADR pooled `Σ(adr × nights) / Σnights` sulle
+  prenotazioni valide (stesso filtro della baseline) con `arrival_date` nel mese
+  dell'anno, **non** media semplice degli `adr` di riga.
+- **Stagionalità con `property_id` omesso/null**: `room_nights` e `revenue`
+  giornalieri sommati sulle due proprietà per data (come nel giornaliero);
+  `avg_occupancy` contro la capacità combinata di 420 camere; `avg_revenue`
+  = media del revenue giornaliero sommato divisa per 2 (media per proprietà).
+
 ### Baseline pulita — il seed script deve riprodurre questi numeri
 
 Dopo deduplica esatta (87.396 righe) e filtro `is_canceled=0, nights>0, adr>0`:

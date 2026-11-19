@@ -218,6 +218,11 @@ export default function App() {
                 </ResponsiveContainer>
               </div>
             </section>
+
+            <p className="mt-3 text-xs text-slate-500">
+              Il riepilogo conta gli arrivi nel periodo; il grafico giornaliero conta i giorni di
+              soggiorno: ai bordi dell'intervallo i totali differiscono per progetto.
+            </p>
           </>
         )}
       </main>

@@ -103,9 +103,20 @@ paths:
         dedup on the original CSV columns; cancellation_rate =
         canceled / total post-dedup (No-Show reported separately);
         adr = revenue / room_nights; occupancy_avg =
-        mean(room_nights / room_count); revpar =
-        revenue / room_count / available-days. Occupancy and RevPAR use
-        **assumed capacity** (190 / 230 rooms), never measured.
+        Σroom_nights / (Σroom_count × days-in-window) — pooled, NOT the mean
+        of daily occupancy ratios — where days-in-window is the number of
+        distinct dates in the requested window (793 for the default full
+        window) and Σroom_count is 190 or 230 per property, 420 for both;
+        revpar = revenue / room_count / available-days. Occupancy and RevPAR
+        use **assumed capacity** (190 / 230 rooms), never measured.
+        Window semantics: the summary is an **arrival cohort** — it filters
+        `bookings.arrival_date` within [date_from, date_to] (inclusive), so
+        a stay arriving inside the window contributes all its nights, even
+        those spilling past date_to. The daily series (`getKpiDaily`) counts
+        stay days on `kpi_daily.date` instead: summary and daily totals
+        differ at range edges **by design** (default window: 19 stay-days
+        past 2017-08-31, €105,263.50, are in the summary but outside the
+        daily window).
         The example is the full-dataset clean baseline the seed script must
         reproduce.
       parameters:
@@ -129,10 +140,21 @@ paths:
       tags: [kpis]
       summary: Daily KPI series (paginated)
       description: |
-        One point per day from `kpi_daily`, computed from non-canceled
-        bookings. `occupancy` is a 0-1 ratio against **assumed capacity**
+        Stay-day series: one point per day from `kpi_daily.date`, computed
+        from non-canceled bookings. `date_from`/`date_to` filter
+        `kpi_daily.date` (stay days), not arrivals: the summary
+        (`getKpiSummary`) is an arrival cohort on `bookings.arrival_date`,
+        so summary and daily totals differ at range edges **by design** —
+        stays crossing date_to contribute all their nights to the summary,
+        but their spill days fall outside the daily window.
+        `occupancy` is a 0-1 ratio against **assumed capacity**
         (190 / 230 rooms), not a percentage and not measured. `adr` is null
         on zero-activity days.
+        With `property_id` omitted or null, ONE row per date aggregates
+        both properties: room_nights and revenue are summed; occupancy and
+        revenue_per_available_room are computed against the combined
+        capacity of 420 rooms; adr = summed revenue / summed room_nights,
+        null when room_nights is zero.
       parameters:
         - $ref: "#/components/parameters/PropertyId"
         - $ref: "#/components/parameters/DateFrom"
@@ -244,6 +266,11 @@ paths:
         2017 are partial years and raw totals mislead. `avg_occupancy` is a
         0-1 ratio against **assumed capacity** (190 / 230 rooms), not
         measured. Example values are illustrative monthly averages.
+        With `property_id` omitted or null, daily room_nights and revenue
+        are summed across both properties per date (as in `getKpiDaily`):
+        `avg_occupancy` is computed against the combined capacity of 420
+        rooms, and `avg_revenue` is the average of the summed daily revenue
+        divided by 2 (per-property average).
       parameters:
         - $ref: "#/components/parameters/PropertyId"
       responses:
@@ -871,8 +898,12 @@ components:
         occupancy_avg:
           type: number
           description: |
-            mean(room_nights / room_count), 0-1 ratio against ASSUMED
-            capacity (190 / 230 rooms) — never measured.
+            Σroom_nights / (Σroom_count × days-in-window): pooled over the
+            window, NOT the mean of daily occupancy ratios. days-in-window
+            = number of distinct dates in the requested window (793 for the
+            default full window); Σroom_count = 190 or 230 per property,
+            420 for both. 0-1 ratio against ASSUMED capacity — never
+            measured.
         revpar:
           type: number
           description: |
@@ -891,7 +922,12 @@ components:
         revpar: 68.99
     KpiDailyPoint:
       type: object
-      description: One day of kpi_daily for one property.
+      description: |
+        One day of kpi_daily for one property. With property_id omitted or
+        null, one row per date sums both properties: room_nights and
+        revenue added; occupancy and revenue_per_available_room against
+        the combined capacity of 420 rooms; adr = summed revenue / summed
+        room_nights, null when zero.
       required:
         - date
         - room_nights
@@ -913,7 +949,8 @@ components:
           type: number
           description: |
             room_nights / room_count — 0-1 ratio (no ×100) against ASSUMED
-            capacity (190 / 230 rooms), not measured.
+            capacity (190 / 230 rooms; 420 when both properties are
+            aggregated), not measured.
         adr:
           type: number
           nullable: true
@@ -921,7 +958,8 @@ components:
         revenue_per_available_room:
           type: number
           description: >-
-            revenue / room_count (ASSUMED capacity, not measured).
+            revenue / room_count (ASSUMED capacity, not measured; 420 when
+            both properties are aggregated).
     KpiDailyPage:
       type: object
       required: [data, meta]
@@ -972,13 +1010,16 @@ components:
         avg_adr:
           type: number
           description: >-
-            Average ADR of valid bookings arriving in this
-            month-of-year.
+            Pooled ADR = Σ(adr × nights) / Σnights over valid bookings
+            (is_canceled=0 AND nights>0 AND adr>0, post-dedup) with
+            arrival_date in this month-of-year — NOT a simple mean of row
+            adr values.
         avg_occupancy:
           type: number
           description: |
             Average daily occupancy in this month-of-year, 0-1 ratio against
-            ASSUMED capacity (190 / 230 rooms) — not measured.
+            ASSUMED capacity (190 / 230 rooms; 420 when both properties are
+            aggregated) — not measured.
         avg_revenue:
           type: number
           description: >-
