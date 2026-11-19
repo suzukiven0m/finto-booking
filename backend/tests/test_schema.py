@@ -141,9 +141,7 @@ def test_i_vocabolari_chiusi_rifiutano_spazzatura(conn, tabella, valori):
 def test_guest_requests_urgency_nullable_varchar10_e_check(conn):
     # 0005 (audit S8): casa pre-freeze per l'urgenza classificata da D15.
     # NULL finche' D15 non la produce, come category/draft_reply.
-    colonna = next(
-        c for c in inspect(conn).get_columns("guest_requests") if c["name"] == "urgency"
-    )
+    colonna = next(c for c in inspect(conn).get_columns("guest_requests") if c["name"] == "urgency")
     assert colonna["nullable"] is True
     assert isinstance(colonna["type"], String)
     assert colonna["type"].length == 10

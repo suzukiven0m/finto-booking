@@ -126,9 +126,7 @@ class GuestRequest(Base):
     __table_args__ = (
         Index("ix_guest_requests_property_id", "property_id"),
         CheckConstraint("status IN ('new', 'draft', 'sent')", name="ck_guest_requests_status"),
-        CheckConstraint(
-            "urgency IN ('low', 'medium', 'high')", name="ck_guest_requests_urgency"
-        ),
+        CheckConstraint("urgency IN ('low', 'medium', 'high')", name="ck_guest_requests_urgency"),
     )
 
     id = Column(Integer, primary_key=True)
