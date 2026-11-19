@@ -18,4 +18,9 @@ data/raw/*
 __pycache__/
 .pytest_cache/
 
+# WP9 NLP (D14): predictions complete e CSV parziali del run solo locali;
+# metriche e sintesi (review_nlp_metrics.json, review_summaries.json) committate
+data/eval/review_nlp_predictions.csv
+data/eval/review_nlp_*.partial.csv
+
 playbooks/
