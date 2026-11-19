@@ -44,7 +44,12 @@ alembic upgrade head
 4. Caricare i dati di prova: seguire il punto 3 del README.
 5. Lanciare i controlli:
 python -m pytest
-   Se è tutto a posto compare 28 passed.
+   Sul dataset completo: 28 passed + 1 skipped (numeri verificati per esecuzione
+   il 2026-11-19 sul master mergiato). Il test del baseline sul campione da 5.000
+   righe si salta per design quando il DB non contiene esattamente 5.000 prenotazioni.
+   In CI i test del backend girano prima del seed, su DB vuoto: 28 passed + 1 skipped,
+   e il test del baseline campione non viene mai eseguito davvero. Gap registrato,
+   fix assegnato a WP8.
 6. Accendere le API:
 uvicorn app.main:app --reload
 7. Accendere la dashboard (dalla cartella frontend, in un altro terminale):

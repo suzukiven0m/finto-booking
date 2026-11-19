@@ -7,19 +7,23 @@ Decisions live in `docs/adr/`, the working plan in `docs/plan.md` and `docs/deli
 
 Done and verified:
 - Postgres schema v1: 5 tables, migrations 0001-0005, schema tests (`backend/`)
-- Data pipeline: bookings, TripAdvisor reviews, 800 synthetic emails, daily KPIs (`data/etl/`)
-- OpenAPI v1 contract: `openapi.yaml` (single source of truth, mirrored in `frontend/mock/`)
-- Dashboard shell (D10) running on the Prism mock (D6), see `frontend/README.md`
+- Data pipeline: bookings, TripAdvisor reviews (1,638, English-only), 800 synthetic emails, daily KPIs (`data/etl/`)
+- OpenAPI v1 contract: `openapi.yaml` (single source of truth, mirrored in `frontend/mock/`); S1–S3 fixed pre-freeze (PR #11)
+- FastAPI app (PR #9): 4 of 11 contract operations on real data — properties,
+  kpis/summary, kpis/daily, auth/login (fake token until D11; secured endpoints
+  do not enforce it yet)
+- Login UI (PR #10) against the fake login
+- Dashboard shell (D10) running on the Prism mock (D6) until the D17 swap, see `frontend/README.md`
 
-Not built yet: API endpoints and JWT auth (D11/D12), review NLP (D14),
-email assistant (D15), forecast (D16). The backend is schema + migrations only,
-there is no FastAPI app to run yet.
+Not built yet: the remaining 7 contract operations (WP8), real JWT auth +
+enforcement (D11/WP7), review NLP (D14), email assistant (D15), forecast
+(D16, stretch).
 
 ## Layout
 
 ```text
 finto-booking/
-├── backend/     schema, migrations, tests   (WSA-1)
+├── backend/     FastAPI app, schema, migrations, tests   (WSA-1)
 ├── frontend/    React + Vite, Prism mock    (WSA-2)
 ├── data/        ETL, generators, tests      (DA-1, DA-2, DA-3)
 ├── infra/       docker-compose (Postgres)   (WSA-3)
@@ -77,14 +81,36 @@ PYTHONPATH=backend backend/.venv/bin/python data/etl/build_kpi_daily.py
 
 All steps are idempotent. Details and full-dataset runs: `docs/playbooks/solo-dataset.md`.
 
-### 4. Frontend demo
+### 4. API (real data)
 
-No backend needed, it runs against the Prism mock:
+With the database seeded (step 3), from `backend/` with the venv of step 2
+(requirements now include fastapi/uvicorn/httpx2):
+
+```bash
+uvicorn app.main:app --port 8000
+```
+
+4 of 11 contract operations are implemented (properties, kpis/summary,
+kpis/daily, auth/login). The login returns a fake token until D11 and secured
+endpoints accept any/no token for now. `avvia.sh` (Mac/Linux) / `avvia.bat`
+(Windows) at the repo root start database + API + dashboard in one command
+(provisional, until compose covers API/web).
+
+### 5. Frontend demo
+
+Default: no backend needed, it runs against the Prism mock:
 
 ```bash
 cd frontend
 npm install
 npm run demo        # mock on :4010 + Vite on :5173
+```
+
+To point the dashboard at the real API instead, set the `VITE_API_BASE_URL`
+seam (`frontend/src/api/client.ts` defaults to `http://localhost:4010`):
+
+```bash
+VITE_API_BASE_URL=http://localhost:8000 npm run dev
 ```
 
 Open http://localhost:5173. More in `frontend/README.md`.

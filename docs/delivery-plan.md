@@ -10,6 +10,12 @@
 
 ## 0. Verdict — read this first
 
+> **SUPERSEDED 2026-11-19 (audit §7):** the "docs-only: zero source files" verdict
+> below is the Nov 9 picture. PRs #6/#7/#8 merged Nov 16 (data pipeline, OpenAPI,
+> dashboard shell on master); as of Nov 19 also merged: API (#9), login UI (#10),
+> contract fixes S1–S3 (#11), schema 0005 (#12). Current status: README «Status»
+> and `docs/reviews/2026-11-19-shepherd-audit.md`. History kept below, not deleted.
+
 The project is **behind its own Sprint 0 exit criteria, which are due tomorrow.** Repo is docs-only: zero source files. ADRs 0001, 0002 and 0003 all accepted (0001/0002 on 2026-11-11, 0003 on 2026-11-13). Meanwhile the dataset cannot satisfy two mandatory deliverables.
 
 Three facts, all computed from the raw CSV:
@@ -139,6 +145,11 @@ Each is a thing a student codes, not a theme.
 
 ### Execution status — branch `data-solo` (2026-11-16)
 
+> **SUPERSEDED 2026-11-19 (audit §7):** PRs #6/#7/#8 merged Nov 16 — the pipeline,
+> OpenAPI (D5) and dashboard shell (D10) are on master; D5/D10 are no longer SAL 1
+> blockers. As of Nov 19 also merged: API (#9), login UI (#10), contract fixes
+> (#11), schema 0005 (#12). The table below is the Nov 16 record, kept as history.
+
 DA-1/DA-2/DA-3 deliverables were ownerless in practice (team unresponsive). WSA-3
 executed them solo per `docs/playbooks/solo-dataset.md`; every solo decision is
 logged in `docs/data-dictionary.md`. **On `data-solo`, PR pending — not on master
@@ -256,15 +267,17 @@ Flat, no star schema. No lookup tables — 178 countries is a plain column. `rev
 
 No capacity column exists. Occupancy and RevPAR are **undefined** without a denominator.
 
-**Chosen approach:** hard-code an assumed room count per property as a named constant, publish it in the data dictionary and on the dashboard footnote.
+**Chosen approach:** an assumed room count per property, published in the data
+dictionary and on the dashboard footnote.
 
-```python
-# data/kpi/constants.py
-CITY_ROOMS = 230      # peak observed concurrent rooms (226) + margin
-RESORT_ROOMS = 190    # peak observed concurrent rooms (187) + margin
+**Correction 2026-11-19 (audit §7):** the `data/kpi/constants.py` file this
+section used to describe does not exist. Capacity lives in `properties.room_count`
+(migration 0001), read by `data/etl/build_kpi_daily.py`:
 
-# occupancy = room_nights_sold / (ROOMS * days_in_period)
-```
+- Buby Montagna (City Hotel): **230** rooms — peak observed concurrent rooms (226) + margin
+- Buby Lago (Resort Hotel): **190** rooms — peak observed concurrent rooms (187) + margin
+
+`occupancy = room_nights_sold / (room_count × days_in_period)`
 
 The auditor flagged the circularity: capacity inferred from peak means occupancy can never exceed 100%. That is acceptable *if labelled an assumption*. It is fraud if presented as measured. The dashboard must carry the footnote.
 
@@ -317,7 +330,7 @@ O1 is the one with legal weight. Pseudonymize guest emails before they touch the
 | # | Risk | Evidence | Mitigation |
 |---|---|---|---|
 | R1 | Brief deliverables unmet: no reviews, no text | 0 of 32 columns | ✅ Closed by ADR 0003 option E (TripAdvisor corpus); emails stay synthetic and disclosed |
-| R2 | Occupancy/RevPAR fabricated | no capacity column | Named constants + dashboard footnote |
+| R2 | Occupancy/RevPAR fabricated | no capacity column | Assumed `room_count` (§6) + dashboard footnote |
 | R3 | Sprint 0 already late | due Nov 10, nothing built | Clear B1-B6 today |
 | R4 | Contract drift after freeze | — | Contract tests in CI |
 | R5 | Data cleaning bugs | 8,171 dup groups, 4 `NA` children, 403 `adults=0`, 715 zero-night rows | D4 baseline check as a test |

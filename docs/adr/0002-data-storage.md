@@ -3,7 +3,7 @@
 - **Stato:** Accettato (voto del team 2026-11-11)
 - **Data:** 2026-11-06
 - **Decisori:** 3 Web Solutions Architect + 3 Data Analyst / AI Specialist
-- **Correlati:** `docs/plan.md`, `docs/adr/0001-tech-stack.md`, `docs/project-bearings.pdf`
+- **Correlati:** `docs/plan.md`, `docs/adr/0001-tech-stack.md`, `docs/project-info/Progetto_Laboratorio_Integrato_Buby_Group_DAI-WSA.pdf`
 
 ## Contesto
 
@@ -96,3 +96,10 @@ Se il team desidera una separazione fisica più marcata, l'**Opzione C** è la v
 - **Positive:** un solo motore, meno superficie operativa, integrazione più semplice, contratto dati più facile da congelare.
 - **Negative:** nessuna flessibilità "schema-on-write"; i campi variabili vanno gestiti con `JSONB` e documentati nel data dictionary.
 - **Seguito:** se viene scelta l'Opzione B, redigere un ADR successivo che definisca chi possiede MongoDB, come avviene la sincronizzazione e quale sia la fonte di verità.
+
+## Correzione 2026-11-19
+
+Riferimento in «Correlati» (audit §7): `docs/project-bearings.pdf` non è mai
+stato committato (pattern gitignored); sostituito dal brief reale,
+`docs/project-info/Progetto_Laboratorio_Integrato_Buby_Group_DAI-WSA.pdf`.
+Nessuna decisione toccata.
