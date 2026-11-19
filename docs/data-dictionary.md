@@ -247,7 +247,8 @@ Fissate il giorno prima del freeze (SAL 1, 2026-11-20). Sorgente: audit
   bump di `info.version` + migrazione. L'urgenza delle email ha invece la sua
   colonna `guest_requests.urgency` (migrazione 0005, sopra): il gold file valuta
   `true_urgency`, quindi all'output serve una casa nello schema prima del
-  freeze. Resta NULL finché D15 non la produce.
+  freeze. Resta NULL finché D15 non la produce. Il wording di `openapi.yaml`
+  (listReviews e Review) è stato allineato il 2026-11-19.
 
 ### `kpi_daily` — KPI per hotel e per giorno
 
