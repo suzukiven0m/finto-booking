@@ -1,7 +1,7 @@
 # ERD — schema v1
 
 Schema generato da `backend/app/models.py` e applicato da Alembic
-(`0001` → `0002` → `0003` → `0004`). Sorgente delle decisioni: ADR 0001, ADR 0002,
+(`0001` → `0002` → `0003` → `0004` → `0005`). Sorgente delle decisioni: ADR 0001, ADR 0002,
 ADR 0003. Dizionario dei campi: `docs/data-dictionary.md`.
 
 ```mermaid
@@ -76,6 +76,7 @@ erDiagram
         timestamptz received_at
         text body
         varchar category "6 categorie"
+        varchar urgency "low / medium / high, NULL fino a D15 (0005)"
         text draft_reply
         varchar status "new / draft / sent"
     }
@@ -101,6 +102,7 @@ erDiagram
 | `bookings` | indice `(property_id, arrival_date)` | ogni KPI filtra per hotel e periodo |
 | `reviews` | indice `(property_id, post_date)` | trend mensile della dashboard reputazione |
 | `guest_requests` | indice `(property_id)` + `CHECK status IN ('new','draft','sent')` | Postgres non indicizza le FK da solo |
+| `guest_requests` | `CHECK urgency IN ('low','medium','high')` (0005) | vocabolario chiuso come `status`; NULL finché D15 non la produce |
 | `kpi_daily` | `UNIQUE (property_id, date)` | una sola riga per hotel e giorno |
 
 **Nessuna FK verso `bookings` da `reviews`.** ADR 0003 §3: il legame è per

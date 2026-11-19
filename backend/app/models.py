@@ -116,8 +116,8 @@ class Review(Base):
     lang = Column(String(20))
 
     # sentiment e topics NON stanno qui: sono output del modello (D14), non dati
-    # di TripAdvisor. Vanno in una tabella derivata, cosi' un re-run del modello
-    # non deve fare UPDATE sulla tabella sorgente.
+    # di TripAdvisor. Decisione pre-freeze 2026-11-19 (audit S8): si calcolano al
+    # momento della query, niente tabelle derivate in v1.
 
 
 class GuestRequest(Base):
@@ -126,6 +126,9 @@ class GuestRequest(Base):
     __table_args__ = (
         Index("ix_guest_requests_property_id", "property_id"),
         CheckConstraint("status IN ('new', 'draft', 'sent')", name="ck_guest_requests_status"),
+        CheckConstraint(
+            "urgency IN ('low', 'medium', 'high')", name="ck_guest_requests_urgency"
+        ),
     )
 
     id = Column(Integer, primary_key=True)
@@ -134,8 +137,9 @@ class GuestRequest(Base):
     received_at = Column(DateTime(timezone=True), nullable=False)
     body = Column(Text, nullable=False)
 
-    # categoria e bozza le mette l'assistente
+    # categoria, urgenza e bozza le mette l'assistente (D15): NULL finche' non arriva
     category = Column(String(50))
+    urgency = Column(String(10))  # low, medium, high (CHECK, migrazione 0005)
     draft_reply = Column(Text)
     status = Column(String(20), nullable=False, server_default="new")  # new, draft, sent
 

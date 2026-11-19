@@ -84,3 +84,21 @@ Compromesso accettato: i WSA scrivono Python sul backend invece di TypeScript. M
 - **Positive:** un solo linguaggio tra dati e backend; sviluppo guidato dal contratto; demo efficace.
 - **Negative:** i WSA devono avere sufficiente familiarità con Python; frontend e backend sono deploy separati salvo containerizzazione congiunta.
 - **Seguito:** se il voto sceglie B o C, registrare in un nuovo ADR il design del bridge per le componenti AI Python prima della fine dello Sprint 1.
+
+## Seguito 2026-11-19
+
+Decisione pre-freeze sull'autenticazione (audit 2026-11-19, S7), registrata il
+giorno prima del congelamento di schema e contratto (SAL 1, 2026-11-20). La
+decisione accettata sopra resta valida: JWT con ruoli `admin`, `manager`,
+`property_manager`.
+
+- **Niente tabella `users` nello schema v1.** Le 5 tabelle congelate non
+  includono utenti: gli utenti demo sono hardcoded nella config del backend
+  (`backend/app/config.py`), con i 3 ruoli della baseline. Emissione dei JWT ed
+  enforcement sugli endpoint protetti sono D11, non questo documento.
+- **Una tabella `users` vera dopo il freeze richiede il protocollo di
+  contract-bump:** nuovo ADR + bump di `info.version` in `openapi.yaml` +
+  migrazione dedicata. Non si aggiunge di nascosto a uno schema congelato.
+
+Registrata anche in `docs/data-dictionary.md` §2 («Decisioni pre-freeze
+2026-11-19»).
