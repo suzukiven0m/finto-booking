@@ -653,7 +653,8 @@ components:
       required: false
       description: >-
         Inclusive lower bound on arrival_date. Omitted = dataset start
-        (2015-07-01).
+        (2015-07-01). For getKpiDaily the bounds filter kpi_daily.date
+        (stay days) instead.
       schema:
         type: string
         format: date
@@ -664,7 +665,8 @@ components:
       required: false
       description: >-
         Inclusive upper bound on arrival_date. Omitted = dataset end
-        (2017-08-31).
+        (2017-08-31). For getKpiDaily the bounds filter kpi_daily.date
+        (stay days) instead.
       schema:
         type: string
         format: date
