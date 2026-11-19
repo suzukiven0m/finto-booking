@@ -361,22 +361,22 @@ paths:
                     property_id: 1
                     count: 762
                     overall: 3.86
-                    cleanliness: 4.02
-                    value: 3.71
-                    location: 4.35
-                    rooms: 3.68
-                    sleep_quality: 3.55
+                    cleanliness: 4.11
+                    value: 3.43
+                    location: 4.62
+                    rooms: 3.78
+                    sleep_quality: 4.17
                 bubyMontagna:
                   summary: Buby Montagna (property 2)
                   value:
                     property_id: 2
                     count: 876
                     overall: 4.40
-                    cleanliness: 4.51
-                    value: 4.28
-                    location: 4.62
-                    rooms: 4.31
-                    sleep_quality: 4.22
+                    cleanliness: 4.63
+                    value: 4.27
+                    location: 4.47
+                    rooms: 4.28
+                    sleep_quality: 4.16
         "401":
           $ref: "#/components/responses/Unauthorized"
         "422":

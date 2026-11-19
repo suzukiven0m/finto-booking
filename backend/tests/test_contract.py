@@ -341,11 +341,27 @@ def test_reviews_summary_pinned(db, property_id):
     if property_id is not None:
         url += f"?property_id={property_id}"
     body = client.get(url, headers=HEAD_MANAGER).json()
-    # WP8a: qui si pina count + overall; gli esempi delle 5 dimensioni nel
-    # contratto sono corretti pre-freeze nel secondo commit di questo ramo
-    attesi = {1: (762, 3.86), 2: (876, 4.40), None: (1638, 4.15)}
-    assert body["count"] == attesi[property_id][0]
-    assert body["overall"] == attesi[property_id][1]
+    if property_id is not None:
+        # tutti e 7 i campi, uguali agli esempi del contratto (WP8a: corretti
+        # pre-freeze alle medie reali del corpus, verificate per esecuzione)
+        esempi = SPEC["paths"]["/api/reviews/summary"]["get"]["responses"]["200"]["content"][
+            "application/json"
+        ]["examples"]
+        nome = "bubyLago" if property_id == 1 else "bubyMontagna"
+        assert body == esempi[nome]["value"]
+    else:
+        # null = media su TUTTE le righe: ponderata per count, non media
+        # delle medie per proprieta'
+        assert body == {
+            "property_id": None,
+            "count": 1638,
+            "overall": 4.15,
+            "cleanliness": 4.39,
+            "value": 3.88,
+            "location": 4.54,
+            "rooms": 4.05,
+            "sleep_quality": 4.17,
+        }
 
 
 def test_reviews_schema_ordine_e_meta(db):
