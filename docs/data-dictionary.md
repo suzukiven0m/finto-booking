@@ -224,14 +224,14 @@ Fissate il giorno prima del freeze (SAL 1, 2026-11-20). Sorgente: audit
 `docs/reviews/2026-11-19-shepherd-audit.md` §3; seguito anche in ADR 0001.
 
 - **S7 — niente tabella `users` in v1.** Lo schema congelato ha 5 tabelle,
-  nessuna per gli utenti. Gli utenti demo sono hardcoded nella config del
-  backend (`backend/app/config.py`), con i 3 ruoli di ADR 0001: `admin`,
-  `manager`, `property_manager`. L'emissione dei JWT è D11: qui si fissa solo
-  la decisione di schema, l'autenticazione non è implementata. Una tabella
-  `users` vera più avanti richiede il protocollo di contract-bump: nuovo ADR +
-  bump di `info.version` in `openapi.yaml` + migrazione dedicata.
+  nessuna per gli utenti. Gli utenti demo saranno hardcoded in
+  `backend/app/config.py` al momento di D11, con i 3 ruoli di ADR 0001:
+  `admin`, `manager`, `property_manager`. L'emissione dei JWT è D11: qui si
+  fissa solo la decisione di schema, l'autenticazione non è implementata. Una
+  tabella `users` vera più avanti richiede il protocollo di contract-bump:
+  nuovo ADR + bump di `info.version` in `openapi.yaml` + migrazione dedicata.
 - **S8 — output NLP al momento della query.** Sentiment, topics e sintesi delle
-  recensioni (D14) si calcolano quando la query li chiede: nessuna tabella
+  recensioni (D14) si calcoleranno quando la query li chiede: nessuna tabella
   derivata in v1, nessun `UPDATE` sulla sorgente a ogni re-run del modello
   (delivery-plan §4 lo consente esplicitamente). Persistere gli output in
   tabelle dedicate più avanti = stesso protocollo di contract-bump: nuovo ADR +

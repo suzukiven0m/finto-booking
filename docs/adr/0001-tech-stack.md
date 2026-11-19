@@ -93,8 +93,8 @@ decisione accettata sopra resta valida: JWT con ruoli `admin`, `manager`,
 `property_manager`.
 
 - **Niente tabella `users` nello schema v1.** Le 5 tabelle congelate non
-  includono utenti: gli utenti demo sono hardcoded nella config del backend
-  (`backend/app/config.py`), con i 3 ruoli della baseline. Emissione dei JWT ed
+  includono utenti: gli utenti demo saranno hardcoded in `backend/app/config.py`
+  al momento di D11, con i 3 ruoli della baseline. Emissione dei JWT ed
   enforcement sugli endpoint protetti sono D11, non questo documento.
 - **Una tabella `users` vera dopo il freeze richiede il protocollo di
   contract-bump:** nuovo ADR + bump di `info.version` in `openapi.yaml` +
