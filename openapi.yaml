@@ -534,7 +534,9 @@ paths:
         Updates the status and/or the draft reply of a synthetic guest
         request. The assistant proposes; a human approves, edits and sends
         (D20). Sending (`status: sent`) never happens without this explicit
-        human action.
+        human action. Role rule (bearerAuth matrix, decided 2026-11-19
+        pre-freeze): `admin` and `manager` may update; `property_manager`
+        receives the declared 403 forbidden envelope.
       parameters:
         - $ref: "#/components/parameters/GuestRequestId"
       requestBody:
@@ -586,7 +588,8 @@ paths:
       summary: Exchange credentials for a JWT
       description: |
         Returns a JWT bearer token and the caller's role (`admin`, `manager`
-        or `property_manager`, ADR 0001). Only the scheme is frozen at SAL 1;
+        or `property_manager`, ADR 0001); the issued role governs write
+        access per the bearerAuth matrix. Only the scheme is frozen at SAL 1;
         real JWT issuance and role enforcement are implemented in D11.
         Unauthenticated by definition. The example token is illustrative.
       security: []
@@ -634,7 +637,12 @@ components:
       description: |
         JWT issued by POST /api/auth/login. Roles: `admin`, `manager`,
         `property_manager` (ADR 0001). Implementation is D11; only the
-        scheme is frozen at SAL 1.
+        scheme is frozen at SAL 1. Role matrix (decided 2026-11-19
+        pre-freeze, operator-approved; implementation D11/WP7): all three
+        roles may read every secured GET (no property-scoping of reads in
+        v1); WRITE on guest-requests (PATCH /api/guest-requests/{id})
+        requires `admin` or `manager`; `property_manager` receives the
+        declared 403 forbidden envelope.
   parameters:
     PropertyId:
       name: property_id
