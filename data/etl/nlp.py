@@ -69,14 +69,34 @@ TOPIC_PROBE_F1 = {
     "noise": 0.933,
     "value": 0.857,
 }
+# Precisioni sulla stessa probe (annotazioni: data/eval/topic_probe_annotations.csv),
+# alla soglia scelta e alla soglia unica 0.5 scartata: il confronto e' la
+# giustificazione delle soglie per-topic nel report e nel metrics JSON.
+TOPIC_PROBE_PRECISION = {
+    "cleanliness": 0.889,
+    "staff": 1.0,
+    "location": 0.917,
+    "breakfast": 1.0,
+    "noise": 1.0,
+    "value": 0.818,
+}
+TOPIC_PROBE_PRECISION_AT_05 = {
+    "cleanliness": 0.8,
+    "staff": 0.929,
+    "location": 0.688,
+    "breakfast": 1.0,
+    "noise": 0.667,
+    "value": 0.526,
+}
 
 # Limiti di token. Sentiment: 512 e' il limite del modello (xlm-roberta).
 # Topics: 256 e' un tetto di runtime, non del modello (bart-large arriva a
-# 1024): sul processore del run (i5-10210U, 4 core) la passata zero-shot fp32
-# costa ~1.3 s/coppia e 1024 token sarebbero ~8 h; 256 tronca il 25.6% dei
-# body (mediana 152 token: la maggioranza resta intera) e dimezza il costo.
-# Il troncamento e' esplicito (truncate_body) perche' la pipeline zero-shot
-# ignora max_length e tronca da sola a 1024.
+# 1024): sul processore del run (i5-10210U, 4 core) la stima da probe/batch
+# piccoli era ~1.3 s/coppia fp32 (a 1024 token ~8 h, proiettati); la media
+# effettiva del run completo e' 0.86 s/coppia (8466 s / 9828 coppie). 256
+# tronca il 25.6% dei body (mediana 152 token, nota di calibrazione: la
+# maggioranza resta intera). Il troncamento e' esplicito (truncate_body)
+# perche' la pipeline zero-shot ignora max_length e tronca da sola a 1024.
 SENTIMENT_MAX_TOKENS = 512
 TOPICS_MAX_TOKENS = 256
 
@@ -126,9 +146,7 @@ def sentiment_from_scores(scores: list[dict]) -> dict:
 
 def sentiment(body: str, pipe) -> dict:
     """Query-time: un body, label + score. `pipe` da load_sentiment_pipeline()."""
-    return sentiment_from_scores(
-        pipe(body, truncation=True, max_length=SENTIMENT_MAX_TOKENS)[0]
-    )
+    return sentiment_from_scores(pipe(body, truncation=True, max_length=SENTIMENT_MAX_TOKENS)[0])
 
 
 def truncate_body(body: str, tokenizer, max_tokens: int) -> tuple[str, bool]:
@@ -181,9 +199,7 @@ def split_sentences(body: str) -> list[str]:
     return [s.strip() for s in re.split(r"(?<=[.!?])\s+", body.strip()) if s.strip()]
 
 
-def monthly_summary(
-    reviews: pd.DataFrame, property_id: int, month: str, k: int = 3
-) -> dict | None:
+def monthly_summary(reviews: pd.DataFrame, property_id: int, month: str, k: int = 3) -> dict | None:
     """Sintesi ESTRATTIVA per proprieta' e mese (es. "2012-01"): niente LLM.
 
     `reviews` deve avere id, property_id, post_date (datetime), body e
@@ -193,8 +209,7 @@ def monthly_summary(
     testuale, prime k. Deterministica a parita' di input. None se il mese e' vuoto.
     """
     g = reviews.loc[
-        (reviews.property_id == property_id)
-        & (reviews.post_date.dt.strftime("%Y-%m") == month)
+        (reviews.property_id == property_id) & (reviews.post_date.dt.strftime("%Y-%m") == month)
     ]
     if g.empty:
         return None
@@ -262,9 +277,7 @@ def compute_metrics(pred: pd.DataFrame, reviews: pd.DataFrame) -> dict:
         correlations = {
             dim: _corr(g.sentiment_score, cast("pd.Series", g[dim])) for dim in DIMENSIONS
         }
-        prevalence = {
-            t: round(float(sets.map(lambda s, t=t: t in s).mean()), 4) for t in TOPICS
-        }
+        prevalence = {t: round(float(sets.map(lambda s, t=t: t in s).mean()), 4) for t in TOPICS}
         patterns = []
         for topic, dim in TOPIC_DIMENSION.items():
             if dim is None:
@@ -324,7 +337,12 @@ def compute_metrics(pred: pd.DataFrame, reviews: pd.DataFrame) -> dict:
             "threshold_calibration": {
                 "probe_n": 20,
                 "selection": "soglia per-topic di massimo F1 sulla probe, dentro il plateau ottimo",
+                "annotations": "data/eval/topic_probe_annotations.csv",
                 "probe_f1": TOPIC_PROBE_F1,
+                "probe_precisions": {
+                    "at_thresholds": TOPIC_PROBE_PRECISION,
+                    "at_0.5": TOPIC_PROBE_PRECISION_AT_05,
+                },
                 "caveat": "probe piccola, stesso corpus, annotatore unico: F1 ottimistico",
             },
             "dimension_map": TOPIC_DIMENSION,

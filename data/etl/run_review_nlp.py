@@ -24,7 +24,8 @@ logica non-modello (data/tests/test_review_nlp.py).
 Run completo (host→container TCP bloccato: sidecar con la rete di Postgres, repo
 in sola lettura, data/eval scrivibile, cache HF dell'host montata — pesi gia'
 scaricati). Lancio in background con log, per non tenere aperta una shell per
-ore (runtime misurato: sentiment ~20 min, topics ~4 h su i5-10210U):
+ore (runtime: stima iniziale ~4 h per topics; misurato 2 h 21 min, sentiment
+~20 min, su i5-10210U):
 
     nohup docker run --rm -i --network container:buby-postgres \
       -v "$PWD":/repo:ro -v "$PWD/data/eval":/repo/data/eval \

@@ -5,7 +5,7 @@
 | Data | 2026-11-19 (run completato il 2026-11-19, ~2 h 41 min di inferenza CPU) |
 | Branch | `fix/wp9-review-nlp` (base `master` @ `74690c5`, v1.0.0 congelato) |
 | Sorgente | `reviews` dal DB, **sola lettura** (1.638 body, 0 nulli). Mai `guest_requests`, mai il gold delle email |
-| Output | `data/eval/review_nlp_predictions.csv` (solo locale, gitignored), `data/eval/review_nlp_metrics.json` e `data/eval/review_summaries.json` (committati). Tutti i numeri di questo report vengono dal metrics JSON |
+| Output | `data/eval/review_nlp_predictions.csv` (solo locale, gitignored), `data/eval/review_nlp_metrics.json` e `data/eval/review_summaries.json` (committati). tutti i numeri delle tabelle §2 vengono dal metrics JSON; le stime di runtime e i valori di calibrazione della probe sono riportati come note (non nel metrics JSON principale) |
 | Decisioni di riferimento | ADR 0003 §5 (NLP, etichette deboli), dizionario «Decisioni pre-freeze» S8 (output al momento della query), S4 (zero overlap temporale) |
 
 **Perimetro.** Il contratto congelato non espone alcun endpoint di output del
@@ -55,17 +55,23 @@ artefatti in `data/eval/`. Verificato prima e dopo: `reviews` = 1.638 righe,
   | noise | 0.90 | 0.933 |
   | value | 0.85 | 0.857 |
 
+  Annotazioni manuali: `data/eval/topic_probe_annotations.csv` (20 righe × 6 topic,
+  `id % 82 = 7`; committato per riproducibilità della calibrazione).
   Onestà sulla calibrazione: probe piccola, stesso corpus, annotatore unico →
   F1 **ottimistico**. Restano falsi negativi che nessuna soglia recupera
   (menzioni esplicite con score 0.21/0.35): la prevalenza dei topic è un
   segnale debole, non una misura esatta. Con soglia unica 0.5 la precisione
-  sulla probe crollerebbe (value 0.526, noise 0.667, location 0.688).
+  sulla probe crollerebbe (value 0.526, noise 0.667, location 0.688;
+  precisioni al threshold calibrato e a 0.5 registrate in
+  `review_nlp_metrics.json` → `topics.threshold_calibration.probe_precisions`).
 - **Troncamento a 256 token per runtime** (decisione documentata, non del
-  modello: bart-large arriva a 1024). Misura sul processore del run
-  (i5-10210U, 4 core): ~1.3 s per coppia NLI fp32; a 1024 token la passata
-  sarebbe ~8 h, a 256 è stata **2 h 21 min**. Troncati 420 body su 1.638
-  (**25,64%**); la mediana è 152 token, quindi la maggioranza dei body resta
-  intera. Il troncamento è esplicito (`nlp.truncate_body`) perché la pipeline
+  modello: bart-large arriva a 1024). Stima da probe/batch piccoli:
+  ~1.3 s/coppia NLI fp32; media effettiva del run completo: **0.86 s/coppia**
+  (8.466 s / 9.828 coppie NLI, dal metrics JSON `runtime_seconds.topics`);
+  a 1024 token la passata sarebbe ~8 h proiettati, a 256 è stata **2 h 21 min**.
+  Troncati 420 body su 1.638 (**25,64%**); la mediana è 152 token
+  (nota di calibrazione dal corpus, non nel metrics JSON), quindi la maggioranza
+  dei body resta intera. Il troncamento è esplicito (`nlp.truncate_body`) perché la pipeline
   zero-shot di transformers ignora `max_length` e troncherebbe da sola a 1024.
   Le sintesi mensili (§1.3) usano invece il body **intero**.
 

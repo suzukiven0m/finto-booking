@@ -183,6 +183,7 @@
     "threshold_calibration": {
       "probe_n": 20,
       "selection": "soglia per-topic di massimo F1 sulla probe, dentro il plateau ottimo",
+      "annotations": "data/eval/topic_probe_annotations.csv",
       "probe_f1": {
         "cleanliness": 0.889,
         "staff": 0.929,
@@ -190,6 +191,24 @@
         "breakfast": 0.909,
         "noise": 0.933,
         "value": 0.857
+      },
+      "probe_precisions": {
+        "at_thresholds": {
+          "cleanliness": 0.889,
+          "staff": 1.0,
+          "location": 0.917,
+          "breakfast": 1.0,
+          "noise": 1.0,
+          "value": 0.818
+        },
+        "at_0.5": {
+          "cleanliness": 0.8,
+          "staff": 0.929,
+          "location": 0.688,
+          "breakfast": 1.0,
+          "noise": 0.667,
+          "value": 0.526
+        }
       },
       "caveat": "probe piccola, stesso corpus, annotatore unico: F1 ottimistico"
     },
