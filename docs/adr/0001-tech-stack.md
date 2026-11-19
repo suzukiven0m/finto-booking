@@ -3,7 +3,7 @@
 - **Stato:** Accettato (voto del team 2026-11-11)
 - **Data:** 2026-11-06
 - **Decisori:** 3 Web Solutions Architect + 3 Data Analyst / AI Specialist
-- **Correlati:** `docs/plan.md`, `docs/project-bearings.pdf`
+- **Correlati:** `docs/plan.md`, `docs/project-info/Progetto_Laboratorio_Integrato_Buby_Group_DAI-WSA.pdf`
 
 ## Contesto
 
@@ -102,3 +102,9 @@ decisione accettata sopra resta valida: JWT con ruoli `admin`, `manager`,
 
 Registrata anche in `docs/data-dictionary.md` §2 («Decisioni pre-freeze
 2026-11-19»).
+
+- **Correzione riferimento (2026-11-19, audit §7):** `docs/project-bearings.pdf`
+  non è mai stato committato (pattern gitignored); in «Correlati» è sostituito
+  dal brief reale,
+  `docs/project-info/Progetto_Laboratorio_Integrato_Buby_Group_DAI-WSA.pdf`.
+  Nessuna decisione toccata.

@@ -12,8 +12,10 @@ root (OpenAPI 3.0.3, `info.version: 1.0.0`). It freezes at SAL 1
   `http://localhost:4010` (Prism mock, D6).
 - **Auth:** global `bearerAuth` (HTTP bearer, JWT). Roles: `admin`,
   `manager`, `property_manager` (ADR 0001). Only the scheme is frozen at
-  SAL 1; issuance and enforcement are D11. `/api/properties` and
-  `/api/auth/login` set `security: []` for the demo.
+  SAL 1; issuance and enforcement are D11 (WP7). **Gap disclosed (audit §4):
+  today the implemented secured endpoints accept any token or none** — the
+  frozen spec promises 401s the implementation does not yet enforce.
+  `/api/properties` and `/api/auth/login` set `security: []` for the demo.
 - **Pagination** (list endpoints): query `page` (int, default 1, min 1)
   and `page_size` (int, default 50, min 1, max 200). Envelope:
   `{ "data": [...], "meta": { page, page_size, total, total_pages } }`.
@@ -22,7 +24,8 @@ root (OpenAPI 3.0.3, `info.version: 1.0.0`). It freezes at SAL 1
   `ValidationError` in `components.responses`.
 - **Common filters:** `property_id` (1 = Buby Lago, 2 = Buby Montagna;
   omitted/null = both), `date_from` / `date_to` (ISO dates, inclusive,
-  on `arrival_date`).
+  on `arrival_date`; for `getKpiDaily` the bounds filter `kpi_daily.date`
+  — stay days — instead).
 - **Ratios:** `occupancy`, `cancellation_rate` and `share` are 0-1
   ratios, never percentages.
 

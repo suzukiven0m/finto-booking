@@ -14,29 +14,44 @@ che non è documentato.
 | O2 | Chiavi LLM e chi paga | Nov 16 | 🔴 decisione da registrare (blocca D15 e i secret di deploy) |
 | O3 | Ownership del codice | SAL 1 | 🔴 da archiviare |
 | O4 | Conferma 4ª sessione cliente | Nov 13 | 🔴 da archiviare |
-| O5 | Stato scritto settimanale (ven) | Nov 13 / Nov 20 | 🟡 bozza sotto; copia inviata da archiviare |
+| O5 | Stato scritto settimanale (ven) | Nov 13 / Nov 20 | 🟡 bozza 2026-11-19 sotto; lo stato del 13 nov non ha evidenza (gap riconosciuto); copia inviata da archiviare |
 
-## O5 — stato settimanale (bozza 2026-11-16, per SAL 1 ven 2026-11-20)
+## O5 — stato settimanale (bozza 2026-11-19, per SAL 1 ven 2026-11-20)
 
-> Aggiornamento dati. Il dataset del progetto è ora riproducibile end-to-end:
-> prenotazioni reali (`hotel_bookings.csv`, Kaggle) pulite e caricate, con il
-> baseline verificato al centesimo — 61.777 prenotazioni valide, 218.410 room-night,
-> **22.976.960,13 €** di ricavo realizzato, ADR 105,20 €. Le recensioni vengono dal
-> corpus TripAdvisor reale (ADR 0003, opzione E): due strutture mappate, 1.638
-> recensioni con i voti reali nelle cinque dimensioni. Le email guest-request sono
-> sintetiche (800, italiano, 6 categorie) e dichiarate come tali.
+> **Gap riconosciuto:** lo stato del 13 nov non è stato inviato/archiviato: gap
+> riconosciuto. Questo aggiornamento del 19 nov recupera il ritardo; invio e
+> archiviazione della copia restano azioni umane (ledger HA-02).
 >
-> Va dichiarato esplicitamente: le due strutture "Buby Lago/Montagna" sono fittizie
-> (mappatura 1:1 dei due hotel del CSV); il legame recensioni↔prenotazioni è
-> **asserito a livello di proprietà**, non fattuale; la capacità delle strutture
+> Aggiornamento dati e applicazione. Il dataset è riproducibile end-to-end e il
+> baseline è verificato al centesimo — 61.777 prenotazioni valide, 218.410
+> room-night, **22.976.960,13 €** di ricavo realizzato, ADR 105,20 €. Le
+> recensioni vengono dal corpus TripAdvisor reale (ADR 0003, opzione E): due
+> strutture mappate, **1.638 recensioni** (762 + 876), corpus **solo inglese**,
+> voti reali nelle cinque dimensioni. Le email guest-request sono sintetiche
+> (800, italiano, 6 categorie) e dichiarate come tali.
+>
+> Va dichiarato esplicitamente: le due strutture "Buby Lago/Montagna" sono
+> fittizie (mappatura 1:1 dei due hotel del CSV); il legame recensioni↔prenotazioni
+> è **asserito a livello di proprietà**, non fattuale; la capacità delle strutture
 > (190/230 camere) è **assunta**, quindi occupazione e RevPAR non sono misure.
-> Nessun dato reale del cliente entra nel repository.
+> **S4 — nessun overlap temporale:** le recensioni sono tutte del 2012
+> (2012-01-02…2012-12-19), le prenotazioni coprono 2015-07…2017-09: zero mesi in
+> comune, quindi solo comparazione a livello di proprietà, nessun join mensile
+> possibile. Nessun dato reale del cliente entra nel repository.
 >
-> Entro SAL 1: contratto API + schema congelati, dizionario dati v1, campione di
-> dati reali che attraversa la ETL v0. Resta da chiudere la specifica OpenAPI (D5)
-> e la shell della dashboard (D10).
+> Stato tecnico al 19 nov: contratto API con le contraddizioni S1/S2/S3 corrette
+> (WP1, PR #11), pronto per il freeze di domani; schema a 0005 con le decisioni
+> pre-freeze su auth e output NLP (WP2, PR #12); API mergiata (PR #9): 4 operazioni
+> su 11 del contratto (properties, kpis/summary, kpis/daily, auth/login — token
+> finto fino a D11); login UI mergiata (PR #10); dashboard ancora sul mock Prism
+> fino allo swap D17. Restano da implementare le altre 7 operazioni, NLP
+> (D14/D15) e il forecast (stretch).
+>
+> Entro SAL 1 (domani): freeze di contratto + schema con sign-off, dizionario
+> dati v1, disclosure complete (sostituzioni dati, capacità assunta, S4).
 
-*Da inviare venerdì e archiviare qui la copia inviata (O5).*
+*Bozza base: il testo finale send-ready sarà finalizzato in WP5 (`docs/sal1/`).
+Da inviare venerdì e archiviare qui la copia inviata (O5). Nulla è ancora inviato.*
 
 ## Notifica al team (bozza — playbook §8.1)
 

@@ -46,20 +46,29 @@ Vincolante per il codice e per il SAL 1:
 - l'analisi congiunta a livello di **proprietà e mese** è lecita, con l'assunzione
   dichiarata.
 
+**S4 — nessun overlap temporale (2026-11-19, audit §3):** le recensioni sono
+tutte del 2012 (`post_date` 2012-01-02…2012-12-19, verificato sulla CSV
+committata), le prenotazioni coprono 2015-07…2017-09: **zero mesi in comune**.
+L'analisi congiunta per mese sancita sopra è vuota: resta solo la comparazione
+a livello di proprietà, nessun join mensile possibile. Da dichiarare al SAL 1.
+
 Presentare il join come un fatto è l'unico modo per rendere l'opzione E
 indifendibile.
 
 ### Assunzione 3 — la capacità delle strutture è assunta
 
 Il CSV non ha una colonna di camere. Senza denominatore occupazione e RevPAR
-sono indefiniti. Costanti fisse, da pubblicare anche nella footnote della
-dashboard:
+sono indefiniti. Capacità assunta per proprietà, da pubblicare anche nella
+footnote della dashboard.
 
-```python
-# data/kpi/constants.py
-CITY_ROOMS = 230      # picco osservato di camere occupate (226) + margine
-RESORT_ROOMS = 190    # picco osservato di camere occupate (187) + margine
-```
+**Correzione 2026-11-19 (audit §7):** il file `data/kpi/constants.py` descritto
+qui non esiste. La capacità vive in `properties.room_count` (migrazione 0001),
+letta da `data/etl/build_kpi_daily.py`:
+
+- Buby Montagna (City Hotel): **230** camere — picco osservato di camere occupate (226) + margine
+- Buby Lago (Resort Hotel): **190** camere — picco osservato di camere occupate (187) + margine
+
+`occupancy = room_nights / (room_count × giorni del periodo)`
 
 L'auditor ha segnalato la circolarità: la capacità è inferita dal picco, quindi
 l'occupazione non può superare il 100%. Accettabile **se etichettata come

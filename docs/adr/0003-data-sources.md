@@ -17,10 +17,16 @@ Il dataset disponibile, `Datasets/hotel_bookings.csv`, contiene 119.390 righe e 
 | Colonna capacità / inventario camere | **0** |
 | Proprietà distinte | 2 (`City Hotel`, `Resort Hotel`) |
 
-Il brief richiede esplicitamente:
+Il brief richiede «una dashboard su occupazione e reputazione» e «almeno una
+componente di elaborazione di testi/email».
+
+**Correzione 2026-11-19 (audit §6):** il brief non dettaglia i KPI della
+dashboard reputazione: la scomposizione sotto è una **derivazione del team**
+(`docs/plan.md`, MVP §3), non una citazione del brief. Resta valida come
+derivazione del team:
 
 - una **dashboard reputazione**: punteggio medio, volume, trend del sentiment, **punteggio per dimensione**;
-- **almeno una componente** di elaborazione di testi o email (classificazione, estrazione, sintesi).
+- **almeno una componente** di elaborazione di testi o email (classificazione, estrazione, sintesi) — questa è requisito esplicito del brief.
 
 Nessuna delle due ha una sorgente dati. Sono 2 dei 5 item MVP. `docs/plan.md` non segnala il problema.
 
@@ -92,6 +98,10 @@ Punteggi 1-5. I pesi riflettono i criteri di valutazione del brief.
 | Valore per la valutazione | 5% | 2 | 4 | 4 | 4 | 5 | 1 |
 | **Punteggio ponderato** | **100%** | **3,20** | **3,80** | **4,15** | **3,90** | **4,30** | **3,00** |
 
+Aritmetica riverificata per esecuzione il 2026-11-19 (pre-freeze): i totali
+stampati sono corretti; la ricomputazione dell'audit §6/§7 (C=4,20 D=4,10 E=4,25)
+è essa stessa errata. Ranking invariato (E primo): la decisione sopravvive.
+
 ## Raccomandazione
 
 **Opzione E — `hotel_bookings.csv` + TripAdvisor.** Motivazioni:
@@ -117,6 +127,21 @@ Conseguenze da dichiarare nel data dictionary e al SAL 1:
 - un'analisi congiunta è lecita **a livello di proprietà e di mese**, con l'assunzione dichiarata.
 
 Presentare il join come se fosse fattuale è l'unico modo per rendere questa opzione indifendibile.
+
+**Correzione 2026-11-19 (audit S4, pre-freeze).** Nei corpora scelti non esiste
+overlap temporale: tutte le 1.638 recensioni hanno `post_date` nel 2012
+(2012-01-02…2012-12-19, verificato sulla CSV committata), le prenotazioni
+coprono 2015-07…2017-09. **Zero mesi in comune**: l'analisi congiunta
+«proprietà × mese» sancita sopra è vuota — è possibile solo la comparazione a
+livello di proprietà, nessun join a livello di mese. Il trend di reputazione è
+una serie solo-2012, l'occupazione è 2015–17: nessuna lettura causale tra le
+due. Da dichiarare al SAL 1 (dizionario §1 Assunzione 2, slide, stato O5).
+
+**Deviazione documentata (2026-11-19).** Lo sketch §3 lascia
+`reviews.property_id` nullable; l'implementazione lo ha reso NOT NULL. Il
+dizionario §2 documenta il perché (una recensione senza proprietà non è
+collegabile a nessun KPI): deviazione accettata, qui riconosciuta prima del
+freeze.
 
 ## Decisione
 
@@ -188,11 +213,22 @@ path = hf_hub_download(
 df = pd.read_pickle(path)
 ```
 
-Regole:
+**Eseguito con correzioni (2026-11-19, audit §6/§7).** Il passo è stato
+eseguito il 2026-11-16 (WSA-3 in solo); le regole sotto sostituiscono la
+prescrizione originale (20.000 recensioni, `tripadvisor_sample.csv` ~3 MB).
+Fonte: dizionario «Decisione TripAdvisor» e docstring di
+`data/etl/load_reviews.py`.
+
+Regole (come eseguite):
 
 - filtrare `lang == "__label__en"`;
-- campionare **20.000** recensioni, bilanciate per `hotel_id`, `random_state=42`;
-- scrivere `data/raw/tripadvisor_sample.csv` (~3 MB) e **committare quello**, non il pickle;
+- nella distribuzione HF `hotel_id` è in realtà l'id della **recensione**: il
+  vero id hotel (`offering_id`) si recupera da `review.txt` (Li et al. 2013)
+  unendo su `id` — senza questo passo il mapping sarebbe impossibile;
+- prendere le due strutture più recensite: **1.638** recensioni in totale
+  (762 + 876), non un campione di 20.000 (sotto 10k si prende tutto e si fissa
+  l'N reale, playbook §5.2);
+- scrivere `data/raw/sample_tripadvisor.csv` (~1,6 MB) e **committare quello**, non il pickle;
 - per lo sviluppo veloce esiste `data1000.pkl` (1.000 righe), utile per provare il loader prima del download completo.
 
 ### 3. Schema recensioni — WSA-1, 12 nov
