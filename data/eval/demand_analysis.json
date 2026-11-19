@@ -1,0 +1,930 @@
+{
+  "meta": {
+    "script": "data/etl/analyze_demand.py",
+    "report": "docs/analysis/demand-pricing.md",
+    "read_only": true,
+    "filters": {
+      "kpi": "is_canceled=false AND nights>0 AND adr>0 (baseline, data-dictionary §3)",
+      "cancellazioni_e_lead_time": "tutte le righe post-dedup (Assunzione 4)"
+    },
+    "capacity_assumed": {
+      "Buby Lago": 190,
+      "Buby Montagna": 230,
+      "combined": 420
+    },
+    "formulas": {
+      "avg_adr": "pooled arrivi mese: sum(adr*nights)/sum(nights) (getKpiSeasonality)",
+      "avg_occupancy": "media daily stay-day su capacita' assunta (getKpiSeasonality)",
+      "avg_revenue": "media revenue daily sommato / n proprieta' (getKpiSeasonality)",
+      "avg_room_nights": "media room-nights giornalieri sommati (stay-day, kpi_daily)",
+      "cancel_rate": "cancellate / righe post-dedup, per gruppo (data-dictionary §3)"
+    },
+    "queries": {
+      "bookings": "SELECT property_id, arrival_date, lead_time, nights, adr, is_canceled,\n       market_segment, deposit_type, customer_type, is_repeated_guest\nFROM bookings",
+      "kpi_daily": "SELECT property_id, date, room_nights, revenue FROM kpi_daily",
+      "properties": "SELECT id, name, room_count FROM properties"
+    }
+  },
+  "baseline": {
+    "rows": 87396,
+    "valid": 61777,
+    "room_nights": 218410,
+    "revenue": 22976960.13,
+    "adr": 105.2,
+    "median_adr_valid_rows": 95.2,
+    "canceled": 24025,
+    "cancel_rate": 0.2749
+  },
+  "seasonality": {
+    "combined": [
+      {
+        "month": 1,
+        "days_observed": 62,
+        "years_observed": [
+          2016,
+          2017
+        ],
+        "avg_room_nights": 167.3,
+        "avg_revenue": 6149.95,
+        "avg_occupancy": 0.3982,
+        "avg_adr": 69.98,
+        "valid_bookings": 3547
+      },
+      {
+        "month": 2,
+        "days_observed": 57,
+        "years_observed": [
+          2016,
+          2017
+        ],
+        "avg_room_nights": 234.6,
+        "avg_revenue": 8671.25,
+        "avg_occupancy": 0.5586,
+        "avg_adr": 73.93,
+        "valid_bookings": 4562
+      },
+      {
+        "month": 3,
+        "days_observed": 62,
+        "years_observed": [
+          2016,
+          2017
+        ],
+        "avg_room_nights": 293.0,
+        "avg_revenue": 11245.26,
+        "avg_occupancy": 0.6977,
+        "avg_adr": 77.63,
+        "valid_bookings": 5551
+      },
+      {
+        "month": 4,
+        "days_observed": 60,
+        "years_observed": [
+          2016,
+          2017
+        ],
+        "avg_room_nights": 304.2,
+        "avg_revenue": 14940.35,
+        "avg_occupancy": 0.7244,
+        "avg_adr": 98.6,
+        "valid_bookings": 5392
+      },
+      {
+        "month": 5,
+        "days_observed": 62,
+        "years_observed": [
+          2016,
+          2017
+        ],
+        "avg_room_nights": 319.6,
+        "avg_revenue": 16342.6,
+        "avg_occupancy": 0.761,
+        "avg_adr": 103.14,
+        "valid_bookings": 5784
+      },
+      {
+        "month": 6,
+        "days_observed": 60,
+        "years_observed": [
+          2016,
+          2017
+        ],
+        "avg_room_nights": 331.3,
+        "avg_revenue": 18739.78,
+        "avg_occupancy": 0.7888,
+        "avg_adr": 113.41,
+        "valid_bookings": 5308
+      },
+      {
+        "month": 7,
+        "days_observed": 93,
+        "years_observed": [
+          2015,
+          2016,
+          2017
+        ],
+        "avg_room_nights": 293.8,
+        "avg_revenue": 19749.24,
+        "avg_occupancy": 0.6996,
+        "avg_adr": 137.1,
+        "valid_bookings": 6719
+      },
+      {
+        "month": 8,
+        "days_observed": 93,
+        "years_observed": [
+          2015,
+          2016,
+          2017
+        ],
+        "avg_room_nights": 328.0,
+        "avg_revenue": 25029.6,
+        "avg_occupancy": 0.781,
+        "avg_adr": 151.0,
+        "valid_bookings": 7489
+      },
+      {
+        "month": 9,
+        "days_observed": 73,
+        "years_observed": [
+          2015,
+          2016,
+          2017
+        ],
+        "avg_room_nights": 268.9,
+        "avg_revenue": 14602.03,
+        "avg_occupancy": 0.6402,
+        "avg_adr": 104.81,
+        "valid_bookings": 4922
+      },
+      {
+        "month": 10,
+        "days_observed": 62,
+        "years_observed": [
+          2015,
+          2016
+        ],
+        "avg_room_nights": 277.9,
+        "avg_revenue": 12191.08,
+        "avg_occupancy": 0.6616,
+        "avg_adr": 87.21,
+        "valid_bookings": 5118
+      },
+      {
+        "month": 11,
+        "days_observed": 60,
+        "years_observed": [
+          2015,
+          2016
+        ],
+        "avg_room_nights": 218.6,
+        "avg_revenue": 7806.68,
+        "avg_occupancy": 0.5204,
+        "avg_adr": 71.26,
+        "valid_bookings": 3808
+      },
+      {
+        "month": 12,
+        "days_observed": 62,
+        "years_observed": [
+          2015,
+          2016
+        ],
+        "avg_room_nights": 173.3,
+        "avg_revenue": 6887.71,
+        "avg_occupancy": 0.4127,
+        "avg_adr": 82.22,
+        "valid_bookings": 3577
+      }
+    ],
+    "per_property": {
+      "Buby Lago": [
+        {
+          "month": 1,
+          "days_observed": 62,
+          "years_observed": [
+            2016,
+            2017
+          ],
+          "avg_room_nights": 74.1,
+          "avg_revenue": 4128.79,
+          "avg_occupancy": 0.3902,
+          "avg_adr": 49.99,
+          "valid_bookings": 1636
+        },
+        {
+          "month": 2,
+          "days_observed": 57,
+          "years_observed": [
+            2016,
+            2017
+          ],
+          "avg_room_nights": 105.5,
+          "avg_revenue": 5686.94,
+          "avg_occupancy": 0.555,
+          "avg_adr": 54.41,
+          "valid_bookings": 2005
+        },
+        {
+          "month": 3,
+          "days_observed": 62,
+          "years_observed": [
+            2016,
+            2017
+          ],
+          "avg_room_nights": 125.0,
+          "avg_revenue": 7191.91,
+          "avg_occupancy": 0.6579,
+          "avg_adr": 58.99,
+          "valid_bookings": 2139
+        },
+        {
+          "month": 4,
+          "days_observed": 60,
+          "years_observed": [
+            2016,
+            2017
+          ],
+          "avg_room_nights": 134.3,
+          "avg_revenue": 10381.43,
+          "avg_occupancy": 0.7068,
+          "avg_adr": 77.51,
+          "valid_bookings": 2118
+        },
+        {
+          "month": 5,
+          "days_observed": 62,
+          "years_observed": [
+            2016,
+            2017
+          ],
+          "avg_room_nights": 153.8,
+          "avg_revenue": 11776.13,
+          "avg_occupancy": 0.8094,
+          "avg_adr": 78.48,
+          "valid_bookings": 2190
+        },
+        {
+          "month": 6,
+          "days_observed": 60,
+          "years_observed": [
+            2016,
+            2017
+          ],
+          "avg_room_nights": 168.2,
+          "avg_revenue": 17326.13,
+          "avg_occupancy": 0.8853,
+          "avg_adr": 103.67,
+          "valid_bookings": 1893
+        },
+        {
+          "month": 7,
+          "days_observed": 93,
+          "years_observed": [
+            2015,
+            2016,
+            2017
+          ],
+          "avg_room_nights": 165.1,
+          "avg_revenue": 23972.01,
+          "avg_occupancy": 0.8691,
+          "avg_adr": 149.81,
+          "valid_bookings": 2960
+        },
+        {
+          "month": 8,
+          "days_observed": 93,
+          "years_observed": [
+            2015,
+            2016,
+            2017
+          ],
+          "avg_room_nights": 174.3,
+          "avg_revenue": 31184.37,
+          "avg_occupancy": 0.9172,
+          "avg_adr": 175.86,
+          "valid_bookings": 3110
+        },
+        {
+          "month": 9,
+          "days_observed": 73,
+          "years_observed": [
+            2015,
+            2016,
+            2017
+          ],
+          "avg_room_nights": 142.5,
+          "avg_revenue": 14133.63,
+          "avg_occupancy": 0.7501,
+          "avg_adr": 92.13,
+          "valid_bookings": 1850
+        },
+        {
+          "month": 10,
+          "days_observed": 62,
+          "years_observed": [
+            2015,
+            2016
+          ],
+          "avg_room_nights": 139.2,
+          "avg_revenue": 9274.82,
+          "avg_occupancy": 0.7329,
+          "avg_adr": 64.85,
+          "valid_bookings": 2142
+        },
+        {
+          "month": 11,
+          "days_observed": 60,
+          "years_observed": [
+            2015,
+            2016
+          ],
+          "avg_room_nights": 108.2,
+          "avg_revenue": 5544.9,
+          "avg_occupancy": 0.5695,
+          "avg_adr": 50.74,
+          "valid_bookings": 1689
+        },
+        {
+          "month": 12,
+          "days_observed": 62,
+          "years_observed": [
+            2015,
+            2016
+          ],
+          "avg_room_nights": 81.9,
+          "avg_revenue": 5317.29,
+          "avg_occupancy": 0.431,
+          "avg_adr": 68.77,
+          "valid_bookings": 1633
+        }
+      ],
+      "Buby Montagna": [
+        {
+          "month": 1,
+          "days_observed": 62,
+          "years_observed": [
+            2016,
+            2017
+          ],
+          "avg_room_nights": 93.1,
+          "avg_revenue": 8171.12,
+          "avg_occupancy": 0.4048,
+          "avg_adr": 86.24,
+          "valid_bookings": 1911
+        },
+        {
+          "month": 2,
+          "days_observed": 57,
+          "years_observed": [
+            2016,
+            2017
+          ],
+          "avg_room_nights": 129.2,
+          "avg_revenue": 11655.57,
+          "avg_occupancy": 0.5616,
+          "avg_adr": 90.18,
+          "valid_bookings": 2557
+        },
+        {
+          "month": 3,
+          "days_observed": 62,
+          "years_observed": [
+            2016,
+            2017
+          ],
+          "avg_room_nights": 168.0,
+          "avg_revenue": 15298.62,
+          "avg_occupancy": 0.7305,
+          "avg_adr": 91.39,
+          "valid_bookings": 3412
+        },
+        {
+          "month": 4,
+          "days_observed": 60,
+          "years_observed": [
+            2016,
+            2017
+          ],
+          "avg_room_nights": 169.9,
+          "avg_revenue": 19499.28,
+          "avg_occupancy": 0.7388,
+          "avg_adr": 115.61,
+          "valid_bookings": 3274
+        },
+        {
+          "month": 5,
+          "days_observed": 62,
+          "years_observed": [
+            2016,
+            2017
+          ],
+          "avg_room_nights": 165.8,
+          "avg_revenue": 20909.08,
+          "avg_occupancy": 0.721,
+          "avg_adr": 126.22,
+          "valid_bookings": 3594
+        },
+        {
+          "month": 6,
+          "days_observed": 60,
+          "years_observed": [
+            2016,
+            2017
+          ],
+          "avg_room_nights": 163.1,
+          "avg_revenue": 20153.43,
+          "avg_occupancy": 0.7092,
+          "avg_adr": 123.54,
+          "valid_bookings": 3415
+        },
+        {
+          "month": 7,
+          "days_observed": 93,
+          "years_observed": [
+            2015,
+            2016,
+            2017
+          ],
+          "avg_room_nights": 128.7,
+          "avg_revenue": 15526.47,
+          "avg_occupancy": 0.5597,
+          "avg_adr": 120.73,
+          "valid_bookings": 3759
+        },
+        {
+          "month": 8,
+          "days_observed": 93,
+          "years_observed": [
+            2015,
+            2016,
+            2017
+          ],
+          "avg_room_nights": 153.7,
+          "avg_revenue": 18874.83,
+          "avg_occupancy": 0.6684,
+          "avg_adr": 122.43,
+          "valid_bookings": 4379
+        },
+        {
+          "month": 9,
+          "days_observed": 66,
+          "years_observed": [
+            2015,
+            2016,
+            2017
+          ],
+          "avg_room_nights": 139.8,
+          "avg_revenue": 16668.82,
+          "avg_occupancy": 0.6076,
+          "avg_adr": 119.02,
+          "valid_bookings": 3072
+        },
+        {
+          "month": 10,
+          "days_observed": 62,
+          "years_observed": [
+            2015,
+            2016
+          ],
+          "avg_room_nights": 138.6,
+          "avg_revenue": 15107.34,
+          "avg_occupancy": 0.6027,
+          "avg_adr": 108.54,
+          "valid_bookings": 2976
+        },
+        {
+          "month": 11,
+          "days_observed": 60,
+          "years_observed": [
+            2015,
+            2016
+          ],
+          "avg_room_nights": 110.4,
+          "avg_revenue": 10068.46,
+          "avg_occupancy": 0.4799,
+          "avg_adr": 90.69,
+          "valid_bookings": 2119
+        },
+        {
+          "month": 12,
+          "days_observed": 62,
+          "years_observed": [
+            2015,
+            2016
+          ],
+          "avg_room_nights": 91.5,
+          "avg_revenue": 8458.13,
+          "avg_occupancy": 0.3976,
+          "avg_adr": 94.27,
+          "valid_bookings": 1944
+        }
+      ]
+    }
+  },
+  "lead_time": {
+    "by_month": [
+      {
+        "month": 1,
+        "n": 4693,
+        "mean_lead_time": 34.5,
+        "median_lead_time": 12.0
+      },
+      {
+        "month": 2,
+        "n": 6098,
+        "mean_lead_time": 35.1,
+        "median_lead_time": 17.0
+      },
+      {
+        "month": 3,
+        "n": 7513,
+        "mean_lead_time": 53.4,
+        "median_lead_time": 36.0
+      },
+      {
+        "month": 4,
+        "n": 7908,
+        "mean_lead_time": 75.9,
+        "median_lead_time": 62.0
+      },
+      {
+        "month": 5,
+        "n": 8355,
+        "mean_lead_time": 92.2,
+        "median_lead_time": 75.0
+      },
+      {
+        "month": 6,
+        "n": 7765,
+        "mean_lead_time": 104.0,
+        "median_lead_time": 87.0
+      },
+      {
+        "month": 7,
+        "n": 10057,
+        "mean_lead_time": 112.0,
+        "median_lead_time": 103.0
+      },
+      {
+        "month": 8,
+        "n": 11257,
+        "mean_lead_time": 102.7,
+        "median_lead_time": 87.0
+      },
+      {
+        "month": 9,
+        "n": 6690,
+        "mean_lead_time": 94.2,
+        "median_lead_time": 55.0
+      },
+      {
+        "month": 10,
+        "n": 6934,
+        "mean_lead_time": 82.9,
+        "median_lead_time": 41.0
+      },
+      {
+        "month": 11,
+        "n": 4995,
+        "mean_lead_time": 47.6,
+        "median_lead_time": 30.0
+      },
+      {
+        "month": 12,
+        "n": 5131,
+        "mean_lead_time": 59.0,
+        "median_lead_time": 30.0
+      }
+    ],
+    "by_segment": [
+      {
+        "market_segment": "Online TA",
+        "n": 51618,
+        "mean_lead_time": 79.9,
+        "median_lead_time": 55.0
+      },
+      {
+        "market_segment": "Offline TA/TO",
+        "n": 13889,
+        "mean_lead_time": 106.1,
+        "median_lead_time": 82.0
+      },
+      {
+        "market_segment": "Direct",
+        "n": 11804,
+        "mean_lead_time": 48.8,
+        "median_lead_time": 15.0
+      },
+      {
+        "market_segment": "Groups",
+        "n": 4942,
+        "mean_lead_time": 147.6,
+        "median_lead_time": 114.0
+      },
+      {
+        "market_segment": "Corporate",
+        "n": 4212,
+        "mean_lead_time": 16.3,
+        "median_lead_time": 5.0
+      },
+      {
+        "market_segment": "Complementary",
+        "n": 702,
+        "mean_lead_time": 13.6,
+        "median_lead_time": 3.0
+      },
+      {
+        "market_segment": "Aviation",
+        "n": 227,
+        "mean_lead_time": 4.3,
+        "median_lead_time": 3.0
+      },
+      {
+        "market_segment": "Undefined",
+        "n": 2,
+        "mean_lead_time": 1.5,
+        "median_lead_time": 1.5
+      }
+    ],
+    "buckets": [
+      {
+        "bucket": "0-7",
+        "n": 18304,
+        "canceled": 1543,
+        "cancel_rate": 0.0843,
+        "mean_lead_time": 2.3
+      },
+      {
+        "bucket": "8-30",
+        "n": 16340,
+        "canceled": 4145,
+        "cancel_rate": 0.2537,
+        "mean_lead_time": 17.8
+      },
+      {
+        "bucket": "31-90",
+        "n": 22744,
+        "canceled": 7280,
+        "cancel_rate": 0.3201,
+        "mean_lead_time": 56.8
+      },
+      {
+        "bucket": "91-180",
+        "n": 18243,
+        "canceled": 6382,
+        "cancel_rate": 0.3498,
+        "mean_lead_time": 131.7
+      },
+      {
+        "bucket": ">180",
+        "n": 11765,
+        "canceled": 4675,
+        "cancel_rate": 0.3974,
+        "mean_lead_time": 251.1
+      }
+    ],
+    "corr_lead_cancel": 0.1848
+  },
+  "channels": [
+    {
+      "market_segment": "Online TA",
+      "bookings": 51618,
+      "share": 0.5906,
+      "canceled": 18245,
+      "cancel_rate": 0.3535,
+      "valid_bookings": 33040,
+      "room_nights": 111540,
+      "revenue": 12973686.94,
+      "revenue_share": 0.5646,
+      "avg_adr": 116.31
+    },
+    {
+      "market_segment": "Offline TA/TO",
+      "bookings": 13889,
+      "share": 0.1589,
+      "canceled": 2063,
+      "cancel_rate": 0.1485,
+      "valid_bookings": 11597,
+      "room_nights": 55820,
+      "revenue": 4595718.77,
+      "revenue_share": 0.2,
+      "avg_adr": 82.33
+    },
+    {
+      "market_segment": "Direct",
+      "bookings": 11804,
+      "share": 0.1351,
+      "canceled": 1737,
+      "cancel_rate": 0.1472,
+      "valid_bookings": 9866,
+      "room_nights": 30931,
+      "revenue": 3927104.69,
+      "revenue_share": 0.1709,
+      "avg_adr": 126.96
+    },
+    {
+      "market_segment": "Groups",
+      "bookings": 4942,
+      "share": 0.0565,
+      "canceled": 1335,
+      "cancel_rate": 0.2701,
+      "valid_bookings": 3406,
+      "room_nights": 12180,
+      "revenue": 922928.01,
+      "revenue_share": 0.0402,
+      "avg_adr": 75.77
+    },
+    {
+      "market_segment": "Corporate",
+      "bookings": 4212,
+      "share": 0.0482,
+      "canceled": 510,
+      "cancel_rate": 0.1211,
+      "valid_bookings": 3633,
+      "room_nights": 7124,
+      "revenue": 483748.83,
+      "revenue_share": 0.0211,
+      "avg_adr": 67.9
+    },
+    {
+      "market_segment": "Complementary",
+      "bookings": 702,
+      "share": 0.008,
+      "canceled": 88,
+      "cancel_rate": 0.1254,
+      "valid_bookings": 57,
+      "room_nights": 143,
+      "revenue": 4804.53,
+      "revenue_share": 0.0002,
+      "avg_adr": 33.6
+    },
+    {
+      "market_segment": "Aviation",
+      "bookings": 227,
+      "share": 0.0026,
+      "canceled": 45,
+      "cancel_rate": 0.1982,
+      "valid_bookings": 178,
+      "room_nights": 672,
+      "revenue": 68968.36,
+      "revenue_share": 0.003,
+      "avg_adr": 102.63
+    },
+    {
+      "market_segment": "Undefined",
+      "bookings": 2,
+      "share": 0.0,
+      "canceled": 2,
+      "cancel_rate": 1.0,
+      "valid_bookings": 0,
+      "room_nights": 0,
+      "revenue": 0.0,
+      "revenue_share": 0.0,
+      "avg_adr": null
+    }
+  ],
+  "adr_occupancy": {
+    "daily_corr_adr_occupancy": 0.5535,
+    "daily_days_with_guests": 806,
+    "daily_zero_days": 0,
+    "monthly_corr_adr_occupancy": {
+      "combined": 0.6898,
+      "Buby Lago": 0.762,
+      "Buby Montagna": 0.6266
+    },
+    "segment_monthly_corr": [
+      {
+        "market_segment": "Complementary",
+        "n_months": 12,
+        "corr_adr_occupancy": -0.0787
+      },
+      {
+        "market_segment": "Corporate",
+        "n_months": 12,
+        "corr_adr_occupancy": 0.7334
+      },
+      {
+        "market_segment": "Direct",
+        "n_months": 12,
+        "corr_adr_occupancy": 0.6714
+      },
+      {
+        "market_segment": "Groups",
+        "n_months": 12,
+        "corr_adr_occupancy": -0.0179
+      },
+      {
+        "market_segment": "Offline TA/TO",
+        "n_months": 12,
+        "corr_adr_occupancy": 0.6104
+      },
+      {
+        "market_segment": "Online TA",
+        "n_months": 12,
+        "corr_adr_occupancy": 0.7656
+      },
+      {
+        "market_segment": "Aviation",
+        "n_months": 10,
+        "corr_adr_occupancy": 0.7411
+      }
+    ],
+    "adr_by_occupancy_bucket": [
+      {
+        "bucket": "<0.40",
+        "days": 102,
+        "adr_mean": 73.28,
+        "adr_median": 63.66,
+        "adr_p25": 58.9,
+        "adr_p75": 73.27
+      },
+      {
+        "bucket": "0.40-0.59",
+        "days": 174,
+        "adr_mean": 86.66,
+        "adr_median": 76.02,
+        "adr_p25": 69.87,
+        "adr_p75": 93.58
+      },
+      {
+        "bucket": "0.60-0.79",
+        "days": 328,
+        "adr_mean": 97.74,
+        "adr_median": 94.4,
+        "adr_p25": 81.79,
+        "adr_p75": 107.04
+      },
+      {
+        "bucket": ">=0.80",
+        "days": 202,
+        "adr_mean": 128.55,
+        "adr_median": 124.13,
+        "adr_p25": 111.32,
+        "adr_p75": 151.56
+      }
+    ]
+  },
+  "guest_effects": {
+    "is_repeated_guest": [
+      {
+        "is_repeated_guest": false,
+        "n": 83981,
+        "canceled": 23764,
+        "cancel_rate": 0.283
+      },
+      {
+        "is_repeated_guest": true,
+        "n": 3415,
+        "canceled": 261,
+        "cancel_rate": 0.0764
+      }
+    ],
+    "deposit_type": [
+      {
+        "deposit_type": "No Deposit",
+        "n": 86251,
+        "canceled": 23016,
+        "cancel_rate": 0.2668
+      },
+      {
+        "deposit_type": "Non Refund",
+        "n": 1038,
+        "canceled": 983,
+        "cancel_rate": 0.947
+      },
+      {
+        "deposit_type": "Refundable",
+        "n": 107,
+        "canceled": 26,
+        "cancel_rate": 0.243
+      }
+    ],
+    "customer_type": [
+      {
+        "customer_type": "Contract",
+        "n": 3139,
+        "canceled": 512,
+        "cancel_rate": 0.1631
+      },
+      {
+        "customer_type": "Group",
+        "n": 544,
+        "canceled": 54,
+        "cancel_rate": 0.0993
+      },
+      {
+        "customer_type": "Transient",
+        "n": 71986,
+        "canceled": 21672,
+        "cancel_rate": 0.3011
+      },
+      {
+        "customer_type": "Transient-Party",
+        "n": 11727,
+        "canceled": 1787,
+        "cancel_rate": 0.1524
+      }
+    ]
+  }
+}
