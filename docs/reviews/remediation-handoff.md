@@ -20,26 +20,30 @@ reviewer → fix → merge; audit backlog `2026-11-19-shepherd-audit.md`).
 - Live DB `buby` at 0005, seeded, baseline exact (61777/218410/€22976960.13/105.20/0.2749).
 - Tagged-master suite green: backend 28+1skip, data 12, frontend 3+tsc+build, lint, mirror.
 
-## IN FLIGHT (updated after runner crash ~17:12 and recovery ~17:40)
+## IN FLIGHT (updated ~18:30 after second host-level crash: all runners SIGTERM'd simultaneously)
 
-Both original runners died while the operator was away (stale-run reconciliation).
-Recovery: WP7 reviewer RESUMED (context preserved); WP9 resume had no handoff record
-(children: []) → fresh worker launched IN THE SAME WORKTREE with a checkpoint brief
-(partial code survives uncommitted; crash-resilient nohup+incremental-checkpoint pattern mandated).
+Recovery pattern that works: inspect on-disk state (worktrees survive), resume if handoff
+record exists, else fresh worker with cwd=worktree + checkpoint brief. WP9 inference
+COMPLETED before the crash (1638/1638 predictions + metrics + summaries JSONs on disk).
 
-1. **WP7 reviewer** run `0473b42b-6f17-43d9-b6d5-2e90000759c5` (resume of da18f6ea; agent reviewer, read-only, no shell).
-   Object: PR **#18** `fix/wp7-real-auth` @ `86edd28` (real JWT, 48+1skip backend, 13 frontend).
-   Orchestrator execution gate ALREADY GREEN (tampered/expired/alg-none/wrong-creds → 401;
-   baseline unchanged; data 12 with raw mount; lint clean). On APPROVE: sign-off comment +
-   `gh pr merge 18 --admin --merge` (protocol below), then launch WP8.
-   Artifact: ~/.pi/agent/sessions/--home-suzuki-code-finto-booking--/subagent-artifacts/da18f6ea-*_reviewer_output.md
-2. **WP9 builder** run `cefbefa1-4e20-4cc2-80ce-d69c505806b9` (fresh worker, cwd = WORKTREE
-   /home/suzuki/code/worktrees/finto-booking/pi-worktree-38ccb643-7497-4acb-b814-b8ad113787fb-s0-0, branch fix/wp9-review-nlp; replaces crashed 38ccb643).
-   D14 review NLP: torch 2.9.1+cpu / transformers 4.57.6 installed in worktree .venv;
-   models cached+pinned (cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual @82107f4,
-   facebook/bart-large-mnli @d7645e1); was calibrating zero-shot thresholds then full 1,638-body run.
-   On completion: extract branch, independent review (eval re-run!), merge via PR.
-   Check: `subagent({action:"status",id:"cefbefa1",options:{view:"transcript",index:0}})`.
+0. **WP7 MERGED** (`c532e22`, PR #18): real JWT, 49+1skip. GitGuardian gate cleared via
+   orchestrator-approved squash rewrite (demo-password literal never enters master history);
+   tree identity proven (978b3bc5…); hash map 2bfee0d+86edd28+6288d9d → 5626e7f.
+1. **WP8 builder** run `e9c30ea3-f9f3-4437-818e-b815eb7fd01a` (resume of d43f92b6; MAIN checkout,
+   branch fix/wp8-remaining-ops). 7 ops + hand-rolled contract tests + frontend CI job +
+   post-seed API-tests step. **WP8a scope addition (orchestrator decision)**: reviews/summary
+   pinned dimension examples were HAND-WRITTEN and match no corpus statistic (builder verified
+   1638×6 row-by-row) → SECOND commit corrects examples pre-freeze to executed SQL averages
+   (p1 762/3.86/4.11/3.43/4.62/3.78/4.17; p2 876/4.40/4.63/4.27/4.47/4.28/4.16), mock sync,
+   tests pin all 7 + weighted both. **RE-TAG OBLIGATION: v1.0.0 must be deleted and re-applied
+   on the final merged master after WP8 (spec changed pre-freeze; client hasn't seen the tag).**
+2. **WP9 builder** run `d6bf5d96-5991-4e38-b962-42684f467978` (resume; WORKTREE
+   pi-worktree-38ccb643-…-s0-0, branch fix/wp9-review-nlp). Inference DONE on disk; remaining:
+   report docs/analysis/reputation-nlp.md, unit tests, acceptance, commit, PR. Predictions CSV
+   local-only (.gitignore), metrics+summaries committed.
+3. **WP12 builder** run `13aea2f2-72df-4597-89ef-eeecb0f981cd` (fresh worker, cwd = WORKTREE
+   pi-worktree-c67153d1-…-s0-0, branch fix/wp12-demand-analysis; replaces crashed c67153d1).
+   analyze_demand.py + demand_analysis.json exist; remaining: report, tests, acceptance, PR.
 
 ## QUEUE (deadline order; briefs were given verbally — recreate from audit + prompt)
 
@@ -50,7 +54,7 @@ Recovery: WP7 reviewer RESUMED (context preserved); WP9 resume had no handoff re
   Reviewer ground truth precomputed: channels Online TA 33040/111540/€12973686.94 etc.;
   seasonality month-of-year (see session 2026-11-19 ~14:20 SQL; recompute if lost).
   Channels example is ILLUSTRATIVE (totals pinned, per-segment not); share = bookings fraction.
-- **WP10** (L3): email classifier fallback (templates/keywords, 6 categories, macro-F1 + confusion
+- **WP10** (L3, AFTER WP8 merge — writes guest_requests, would break WP8 zero-mutation end-state): email classifier fallback (templates/keywords, 6 categories, macro-F1 + confusion
   matrix vs data/eval/email_gold.csv, NEVER in DB), draft replies status=draft never auto-sent;
   LLM upgrade **blocked on O2 keys (human, overdue)**. Gold alignment: same-run TRUNCATE RESTART IDENTITY.
 - **WP11** (L2, after WP8): reputation page (real scores per frozen ReviewSummary; trend labeled
