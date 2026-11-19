@@ -5,21 +5,26 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException
 
-from app import auth, errors, kpis
+from app import auth, bookings, errors, guest_requests, kpis, reviews
 from app.database import engine
 from app.models import Property
 
 # per accenderlo: uvicorn app.main:app --reload
 app = FastAPI(title="Buby Travel API", version="1.0.0")
 
-# errori sempre nel formato del contratto (vedi errors.py)
-app.add_exception_handler(HTTPException, errors.errore_http)
-app.add_exception_handler(RequestValidationError, errors.errore_validazione)
+# errori sempre nel formato del contratto (vedi errors.py).
+# type: ignore perche' i stub starlette vogliono handler(exc: Exception),
+# ma FastAPI chiama questi handler solo con l'eccezione registrata.
+app.add_exception_handler(HTTPException, errors.errore_http)  # type: ignore[arg-type]
+app.add_exception_handler(RequestValidationError, errors.errore_validazione)  # type: ignore[arg-type]
 app.add_exception_handler(Exception, errors.errore_imprevisto)
 
 # endpoint che stanno negli altri file
 app.include_router(kpis.router)
 app.include_router(auth.router)
+app.include_router(reviews.router)
+app.include_router(bookings.router)
+app.include_router(guest_requests.router)
 
 # senza questo il browser blocca la dashboard (gira su un'altra porta)
 app.add_middleware(

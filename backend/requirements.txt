@@ -12,3 +12,5 @@ PyJWT==2.10.1  # JWT sign/verify e' un trust boundary: niente crypto fatta a man
 # test
 pytest==9.2.0
 httpx2==2.16.2  # serve al TestClient di fastapi
+pyyaml==6.0.3  # contract test WP8: caricamento di openapi.yaml
+jsonschema==4.26.0  # contract test WP8: validazione risposte contro gli schema del contratto

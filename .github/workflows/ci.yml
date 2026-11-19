@@ -56,7 +56,9 @@ jobs:
 
       - name: Schema tests
         working-directory: backend
-        run: pytest -q
+        # i contract test vogliono il DB seedato: girano nel passo post-seed
+        # "API tests on sample", qui si escludono per non raccoglierli a vuoto
+        run: pytest -q --ignore=tests/test_contract.py
 
       - name: Round-trip
         working-directory: backend
@@ -98,3 +100,38 @@ jobs:
 
       - name: Data tests
         run: PYTHONPATH=backend pytest -q data/tests
+
+      - name: API tests on sample
+        # WP8: dopo il seed il baseline campione (5000 righe) finalmente gira
+        # (prima saltava sempre: gap di ordinamento seed dalla review WP3).
+        # Qui girano anche i contract test: tutte le 11 operazioni validate
+        # contro openapi.yaml sul DB seedato.
+        run: >-
+          PYTHONPATH=backend pytest -q
+          backend/tests/test_api.py backend/tests/test_contract.py
+
+  frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install
+        working-directory: frontend
+        run: npm ci
+
+      - name: Test
+        working-directory: frontend
+        run: npm test -- --run
+
+      - name: Typecheck
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
