@@ -26,6 +26,14 @@ export class ApiError extends Error {
 // Demo token from /api/auth/login; real JWT issuance is D11.
 let token: string | null = null;
 
+// evento lanciato quando l'api risponde 401: la pagina torna al login
+export const SESSION_EXPIRED = "buby:session-expired";
+
+// rimette il token salvato (ricarica pagina) o lo toglie (logout)
+export function setToken(value: string | null) {
+  token = value;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (!token && path !== "/api/auth/login") {
     await login("manager@buby.travel", "demo");
@@ -39,6 +47,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     },
   });
   const body: unknown = await res.json().catch(() => null);
+  // token scaduto o non valido: si torna al login (vedi AuthGate.tsx)
+  if (res.status === 401 && path !== "/api/auth/login") {
+    token = null;
+    if (typeof window !== "undefined") window.dispatchEvent(new Event(SESSION_EXPIRED));
+  }
   if (!res.ok) {
     const error = (body as { error?: ApiErrorBody } | null)?.error;
     throw new ApiError(

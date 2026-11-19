@@ -12,6 +12,8 @@ import {
 } from "recharts";
 import { ApiError, getKpiDaily, getKpiSummary, getProperties } from "./api/client";
 import type { KpiDailyPoint, KpiSummary, Property } from "./api/types";
+import { ROLE_LABELS } from "./session";
+import type { Session } from "./session";
 
 const eur = new Intl.NumberFormat("it-IT", {
   style: "currency",
@@ -36,7 +38,7 @@ function KpiCard({ label, value, hint }: { label: string; value: string; hint?: 
   );
 }
 
-export default function App() {
+export default function App({ session, onLogout }: { session: Session; onLogout: () => void }) {
   const [properties, setProperties] = useState<Property[]>([]);
   const [propertyId, setPropertyId] = useState("");
   const [dateFrom, setDateFrom] = useState(DEFAULT_FROM);
@@ -134,6 +136,19 @@ export default function App() {
                 onChange={(event) => setDateTo(event.target.value)}
               />
             </label>
+            {/* chi e' entrato + logout */}
+            <div className="flex items-center gap-3 text-sm">
+              <span className="text-slate-500">
+                {session.email} · {ROLE_LABELS[session.role] ?? session.role}
+              </span>
+              <button
+                type="button"
+                onClick={onLogout}
+                className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-100"
+              >
+                Log out
+              </button>
+            </div>
           </div>
         </div>
       </header>
