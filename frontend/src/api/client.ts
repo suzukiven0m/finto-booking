@@ -23,7 +23,7 @@ export class ApiError extends Error {
   }
 }
 
-// Demo token from /api/auth/login; real JWT issuance is D11.
+// Bearer JWT from POST /api/auth/login (D11); null until Login.tsx signs in.
 let token: string | null = null;
 
 // evento lanciato quando l'api risponde 401: la pagina torna al login
@@ -35,9 +35,6 @@ export function setToken(value: string | null) {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  if (!token && path !== "/api/auth/login") {
-    await login("manager@buby.travel", "demo");
-  }
   const res = await fetch(`${BASE_URL}${path}`, {
     ...init,
     headers: {

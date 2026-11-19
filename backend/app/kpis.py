@@ -1,12 +1,14 @@
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import text
 
+from app import auth
 from app.database import engine
 
-router = APIRouter()
+# tutte le rotte KPI sono protette dal bearer JWT (D11)
+router = APIRouter(dependencies=[Depends(auth.require_token)])
 
 # se non passano le date uso tutto il dataset
 INIZIO = date(2015, 7, 1)

@@ -4,9 +4,8 @@ import type { FormEvent } from "react";
 import { ApiError, login } from "./api/client";
 import type { Session } from "./session";
 
-// login di prova: chiama gia' POST /api/auth/login del contratto.
-// oggi rispondono il mock o il login finto del backend (accettano tutto),
-// quando ci sara' il login vero qui non cambia niente.
+// login vero (D11/WP7): chiama POST /api/auth/login, che valida le credenziali
+// sugli utenti demo e emette un JWT con il ruolo. Gli errori 401 li mostra il form.
 export default function Login({ onLogin }: { onLogin: (session: Session) => void }) {
   const [email, setEmail] = useState("manager@buby.travel");
   const [password, setPassword] = useState("");
@@ -87,7 +86,8 @@ export default function Login({ onLogin }: { onLogin: (session: Session) => void
         </button>
 
         <p className="text-xs text-slate-400">
-          Demo login: any email and password work until the real login (D11) is ready.
+          Demo users (published dev defaults, not secrets): admin@buby.travel,
+          manager@buby.travel, property.manager@buby.travel — password: demo.
         </p>
       </form>
     </div>

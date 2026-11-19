@@ -21,6 +21,8 @@ export function loadSession(): Session | null {
     const saved = sessionStorage.getItem(KEY);
     if (!saved) return null;
     const session = JSON.parse(saved) as Session;
+    // P2 (review WP3): JSON valido ma forma sbagliata non e' una sessione
+    if (typeof session?.token !== "string" || typeof session?.email !== "string") return null;
     setToken(session.token);
     return session;
   } catch {

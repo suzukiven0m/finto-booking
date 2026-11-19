@@ -6,6 +6,9 @@ from app.main import app
 
 # chiama l'app senza accendere il server
 client = TestClient(app)
+# le rotte kpi ora vogliono il bearer JWT (D11): un login demo per tutti i test
+_login = client.post("/api/auth/login", json={"email": "manager@buby.travel", "password": "demo"})
+client.headers["Authorization"] = f"Bearer {_login.json()['access_token']}"
 
 
 def test_properties(conn):
@@ -99,12 +102,12 @@ def test_summary_date_al_contrario():
     assert r.json()["error"]["code"] == "validation_error"
 
 
-def test_login_finto():
-    r = client.post("/api/auth/login", json={"email": "manager@buby.travel", "password": "x"})
+def test_login_demo():
+    r = client.post("/api/auth/login", json={"email": "manager@buby.travel", "password": "demo"})
     assert r.status_code == 200
     assert r.json()["token_type"] == "bearer"
     assert "access_token" in r.json()
-    assert "role" in r.json()
+    assert r.json()["role"] == "manager"
 
 
 def test_login_senza_password():
