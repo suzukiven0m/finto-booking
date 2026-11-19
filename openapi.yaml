@@ -390,8 +390,9 @@ paths:
         Real public TripAdvisor reviews, linked to a property by an
         **asserted** mapping (no FK to bookings, ADR 0003 §3). Scores are
         real guest scores (weak labels). No `sentiment`/`topics` fields:
-        those are model output (D14) and live in a derived table, never in
-        the source contract.
+        those are model output (D14), computed at query time per the
+        pre-freeze decision 2026-11-19 (S8, dictionary «Decisioni
+        pre-freeze»), never in the source contract.
       parameters:
         - $ref: "#/components/parameters/PropertyId"
         - $ref: "#/components/parameters/Page"
@@ -1091,7 +1092,9 @@ components:
       description: |
         A real public TripAdvisor review. property_id is an ASSERTED
         mapping (no FK to bookings). NO sentiment/topics fields: model
-        output lives in a derived table (ADR 0003 §3, D14).
+        output (D14) is computed at query time per the pre-freeze decision
+        2026-11-19 (S8, dictionary «Decisioni pre-freeze»), never in the
+        source contract.
       required:
         - id
         - property_id
