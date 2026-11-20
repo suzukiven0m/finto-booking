@@ -1,11 +1,16 @@
 import type {
   ApiErrorBody,
+  Booking,
   DataEnvelope,
+  GuestRequest,
+  GuestRequestUpdate,
   KpiDailyPoint,
   KpiSummary,
   LoginResponse,
   Page,
   Property,
+  Review,
+  ReviewSummary,
 } from "./types";
 
 const BASE_URL: string =
@@ -99,4 +104,59 @@ export function getKpiSummary(params: KpiQuery): Promise<KpiSummary> {
 
 export function getKpiDaily(params: KpiQuery): Promise<Page<KpiDailyPoint>> {
   return request<Page<KpiDailyPoint>>(`/api/kpis/daily${queryString(params)}`);
+}
+
+// /api/reviews/summary — property_id only; response is the ReviewSummary directly (no envelope)
+export function getReviewSummary(params: {
+  property_id?: number | null;
+}): Promise<ReviewSummary> {
+  return request<ReviewSummary>(`/api/reviews/summary${queryString(params)}`);
+}
+
+// /api/reviews — paginated; structurally assignable to KpiQuery so queryString works
+export function listReviews(params: {
+  property_id?: number | null;
+  page?: number;
+  page_size?: number;
+}): Promise<Page<Review>> {
+  return request<Page<Review>>(`/api/reviews${queryString(params)}`);
+}
+
+// /api/bookings — declared filters per spec (is_canceled boolean serialised via String())
+export type BookingQuery = {
+  property_id?: number | null;
+  date_from?: string;
+  date_to?: string;
+  is_canceled?: boolean;
+  market_segment?: string;
+  page?: number;
+  page_size?: number;
+};
+
+export function listBookings(params: BookingQuery): Promise<Page<Booking>> {
+  return request<Page<Booking>>(`/api/bookings${queryString(params)}`);
+}
+
+// /api/guest-requests — paginated, optional status filter
+export type GuestRequestQuery = {
+  property_id?: number | null;
+  status?: "new" | "draft" | "sent";
+  page?: number;
+  page_size?: number;
+};
+
+export function listGuestRequests(params: GuestRequestQuery): Promise<Page<GuestRequest>> {
+  return request<Page<GuestRequest>>(`/api/guest-requests${queryString(params)}`);
+}
+
+// PATCH /api/guest-requests/{id} — returns GuestRequest directly (no envelope).
+// Role matrix: admin/manager only; property_manager receives 403 Forbidden.
+export function patchGuestRequest(
+  id: number,
+  update: GuestRequestUpdate,
+): Promise<GuestRequest> {
+  return request<GuestRequest>(`/api/guest-requests/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(update),
+  });
 }
