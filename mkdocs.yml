@@ -1,0 +1,120 @@
+site_name: Buby Travel
+site_description: Documentazione del progetto di laboratorio Buby Travel
+repo_url: https://github.com/suzukiven0m/finto-booking
+repo_name: suzukiven0m/finto-booking
+docs_dir: docs
+
+theme:
+  name: material
+  language: it
+  palette:
+    - scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-7
+        name: Passa al tema scuro
+    - scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/brightness-4
+        name: Passa al tema chiaro
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - toc.follow
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+
+nav:
+  - Home: index.md
+  - Per iniziare:
+      - Guida per iniziare: getting-started.md
+      - Glossario: glossario.md
+  - Architettura:
+      - Panoramica e diagramma: architettura/README.md
+      - Browser: architettura/spa-react.md
+      - Serving:
+          - nginx proxy: architettura/nginx-proxy.md
+          - API FastAPI: architettura/api-fastapi.md
+          - Autenticazione e ruoli: architettura/auth-jwt-ruoli.md
+          - Database PostgreSQL: architettura/database-postgres.md
+          - Migrazioni Alembic: architettura/migrazioni-alembic.md
+          - Docker Compose: architettura/docker-compose.md
+      - Pipeline dati:
+          - ETL: architettura/etl-pipeline.md
+          - Classificatore email: architettura/classificatore-email.md
+          - NLP recensioni: architettura/nlp-recensioni.md
+          - Valutazione e anti-leakage: architettura/valutazione-anti-leakage.md
+      - Contratto e CI:
+          - Contratto OpenAPI: architettura/contratto-openapi.md
+          - Mock e Prism: architettura/mock-prism.md
+          - Contract test: architettura/contract-tests.md
+          - GitHub Actions: architettura/ci-github-actions.md
+      - Processo: architettura/processo-governance.md
+  - Dati e API:
+      - Dizionario dati: data-dictionary.md
+      - ERD: erd.md
+      - Contratto API: api-contract.md
+  - Analisi:
+      - Reputazione NLP: analysis/reputation-nlp.md
+      - Assistente email: analysis/email-assistant.md
+      - Domanda e prezzi: analysis/demand-pricing.md
+      - Report finale: analysis/final-report.md
+  - Decisioni:
+      - ADR 0001 Stack: adr/0001-tech-stack.md
+      - ADR 0002 Persistenza: adr/0002-data-storage.md
+      - ADR 0003 Sorgenti dati: adr/0003-data-sources.md
+      - ADR 0004 Deploy: adr/0004-deploy.md
+  - Processo:
+      - Piano: plan.md
+      - Delivery plan: delivery-plan.md
+      - Comunicazioni cliente: client-comms.md
+      - SAL 1:
+          - Slide: sal1/slides-outline.md
+          - Catalogo KPI: sal1/kpi-signoff.md
+          - Stato settimanale: sal1/o5-status.md
+          - Freeze checklist: sal1/freeze-checklist.md
+      - Demo script: demo-script.md
+      - Azioni umane: reviews/human-actions.md
+      - Stato remediation: reviews/2026-11-20-remediation-status.md
+  - Audit trail:
+      - Shepherd audit: reviews/2026-11-19-shepherd-audit.md
+      - Rehearsal demo: reviews/2026-11-20-demo-rehearsals.md
+      - Review iniziali:
+          - Plumbing review: reviews/plumbing-review.md
+          - PR 4 schema: reviews/pr-4-schema-v1.md
+      - Record per package:
+          - WP1: reviews/packages/2026-11-19-wp1.md
+          - WP2: reviews/packages/2026-11-19-wp2.md
+          - WP2b: reviews/packages/2026-11-19-wp2b.md
+          - WP3: reviews/packages/2026-11-19-wp3.md
+          - WP4: reviews/packages/2026-11-19-wp4.md
+          - WP5: reviews/packages/2026-11-19-wp5.md
+          - WP6: reviews/packages/2026-11-19-wp6.md
+          - WP7: reviews/packages/2026-11-19-wp7.md
+          - WP7a: reviews/packages/2026-11-19-wp7a.md
+          - WP8: reviews/packages/2026-11-19-wp8.md
+          - WP9: reviews/packages/2026-11-19-wp9.md
+          - WP10: reviews/packages/2026-11-19-wp10.md
+          - WP11: reviews/packages/2026-11-19-wp11.md
+          - WP12: reviews/packages/2026-11-19-wp12.md
+          - WP13: reviews/packages/2026-11-19-wp13.md
+          - WP14: reviews/packages/2026-11-19-wp14.md
+      - Archivio:
+          - Handoff (superato): reviews/archive/remediation-handoff.md

@@ -2,7 +2,7 @@
 
 Mappa i requisiti della checklist di freeze (`docs/delivery-plan.md` §4
 «Contract freeze checklist») alle evidenze. Verifiche tecniche eseguite il
-2026-11-19 e registrate nei record WP (`docs/reviews/2026-11-19-wp*.md`);
+2026-11-19 e registrate nei record WP (`docs/reviews/packages/2026-11-19-wp*.md`);
 le azioni umane restano aperte nel ledger (`docs/reviews/human-actions.md`).
 **Nessuna azione umana è dichiarata fatta: il freeze è effettivo al SAL 1 con
 sign-off e tag.**

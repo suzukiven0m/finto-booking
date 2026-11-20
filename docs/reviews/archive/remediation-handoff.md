@@ -16,7 +16,7 @@ reviewer → fix → merge; audit backlog `2026-11-19-shepherd-audit.md`).
   property_manager → 403. Frozen in spec (WP7a).
 - Records committed: wp1, wp2, wp3, wp6. **Records drafted in /tmp, NOT yet committed**:
   `/tmp/wp4-record.md`, `/tmp/wp2b-record.md`, `/tmp/wp5-record.md`, `/tmp/wp7a-record.md`
-  → commit as `docs/reviews/2026-11-19-wp{4,2b,5,7a}.md` via the next docs PR.
+  → commit as `docs/reviews/packages/2026-11-19-wp{4,2b,5,7a}.md` via the next docs PR.
 - Live DB `buby` at 0005, seeded, baseline exact (61777/218410/€22976960.13/105.20/0.2749).
 - Tagged-master suite green: backend 28+1skip, data 12, frontend 3+tsc+build, lint, mirror.
 
@@ -126,5 +126,5 @@ COMPLETED before the crash (1638/1638 predictions + metrics + summaries JSONs on
 Stato finale: `docs/reviews/2026-11-20-remediation-status.md` (report completo,
 ogni finding audit → closed/open/blocked/human-gated con evidenza). Tutti i WP
 mergiati (#11–#25); tag v1.0.0 @ fd668bf (contratto invariato da allora, verificato).
-Record per-package: docs/reviews/2026-11-19-wp*.md. Azioni umane residue:
+Record per-package: docs/reviews/packages/2026-11-19-wp*.md. Azioni umane residue:
 docs/reviews/human-actions.md (HA-01…HA-15). Deploy pubblico: HA-10 (account umani).

@@ -1,6 +1,6 @@
 # API contract v1 — conventions
 
-The canonical contract is [`openapi.yaml`](../openapi.yaml) at the repo
+The canonical contract is [`openapi.yaml`](https://github.com/suzukiven0m/finto-booking/blob/master/openapi.yaml) at the repo
 root (OpenAPI 3.0.3, `info.version: 1.0.0`). It freezes at SAL 1
 (2026-11-20). KPI rules and the clean baseline live in
 `docs/data-dictionary.md` §3; the schema in `docs/erd.md`.
