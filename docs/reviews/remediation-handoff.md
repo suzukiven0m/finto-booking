@@ -121,3 +121,10 @@ COMPLETED before the crash (1638/1638 predictions + metrics + summaries JSONs on
   HA-05 O2 keys (OVERDUE, blocks WP10 LLM), HA-06/07/08/09 O1/O3/O4/B4, HA-10 deploy accounts,
   HA-11 SAL1 present, HA-12 demo+rehearsals, HA-13 second gh account, HA-14 §11 contradictions
   (auth half resolved by WP7 implementation; forecast half → WP12 memo at SAL 1).
+## CHIUSURA 2026-11-20 — questo handoff è SUPERSEDUTO
+
+Stato finale: `docs/reviews/2026-11-20-remediation-status.md` (report completo,
+ogni finding audit → closed/open/blocked/human-gated con evidenza). Tutti i WP
+mergiati (#11–#25); tag v1.0.0 @ fd668bf (contratto invariato da allora, verificato).
+Record per-package: docs/reviews/2026-11-19-wp*.md. Azioni umane residue:
+docs/reviews/human-actions.md (HA-01…HA-15). Deploy pubblico: HA-10 (account umani).

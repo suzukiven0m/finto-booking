@@ -120,7 +120,7 @@ Passi tecnici *dopo* HA-05:
 
 ---
 
-## 6. Comando riproducibile
+## 7. Comando riproducibile
 
 ```bash
 # eval (legge DB + gold, scrive metriche e questo report):
