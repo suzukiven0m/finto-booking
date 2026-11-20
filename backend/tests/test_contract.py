@@ -451,12 +451,20 @@ def test_guest_requests_schema_ordine_e_meta(db):
         == db.execute(select(func.count()).select_from(GuestRequest)).scalar_one()
     )
     campi = set(SPEC["components"]["schemas"]["GuestRequest"]["properties"])
+    _valid_cats = {
+        "availability",
+        "cancellation",
+        "complaint",
+        "special_request",
+        "billing",
+        "info",
+    }
     for p in body["data"]:
         # urgency (0005) non e' nel contratto: mai esposta
         assert set(p) == campi
-        # category/draft_reply sono output D15: NULL finche' non arriva
-        assert p["category"] is None
-        assert p["draft_reply"] is None
+        # post-D15 (WP10): category e draft_reply sono compilate dal classificatore
+        assert p["category"] in _valid_cats
+        assert isinstance(p["draft_reply"], str) and p["draft_reply"]
 
 
 def test_guest_requests_filtro_status(db):
@@ -500,7 +508,58 @@ def riga_guest(db):
     db.commit()
 
 
-def test_patch_new_to_draft_schema(riga_guest):
+@pytest.fixture
+def riga_new(db):
+    """Forza riga 1 a status='new', ripristina lo stato originale a fine test (P1)."""
+    originale = db.execute(
+        select(
+            GuestRequest.status,
+            GuestRequest.draft_reply,
+            GuestRequest.category,
+            GuestRequest.urgency,
+        ).where(GuestRequest.id == 1)
+    ).one()
+    db.execute(update(GuestRequest).where(GuestRequest.id == 1).values(status="new"))
+    db.commit()
+    yield 1
+    db.execute(
+        update(GuestRequest)
+        .where(GuestRequest.id == 1)
+        .values(
+            status=originale[0],
+            draft_reply=originale[1],
+            category=originale[2],
+            urgency=originale[3],
+        )
+    )
+    db.commit()
+
+
+def test_patch_transizioni_da_new(riga_new):
+    """Matrice da status='new': new->new 422, new->sent 422, new->draft 200+schema."""
+    url = f"/api/guest-requests/{riga_new}"
+
+    # new->new: ciclo vietato
+    r = client.patch(url, json={"status": "new"}, headers=HEAD_MANAGER)
+    assert_errore(r, 422, "validation_error")
+
+    # new->sent: salta draft, vietato dal HITL workflow
+    r = client.patch(url, json={"status": "sent"}, headers=HEAD_MANAGER)
+    assert_errore(r, 422, "validation_error")
+
+    # new->draft: happy path (lo stato e' ancora 'new' perche' i due PATCH sopra fallirono)
+    r = client.patch(
+        url,
+        json={"status": "draft", "draft_reply": "Bozza da new."},
+        headers=HEAD_MANAGER,
+    )
+    assert r.status_code == 200
+    valida(r.json(), "GuestRequest")
+    assert r.json()["status"] == "draft"
+    assert r.json()["draft_reply"] == "Bozza da new."
+
+
+def test_patch_draft_to_draft_schema(riga_guest):
     r = client.patch(
         f"/api/guest-requests/{riga_guest}",
         json={"status": "draft", "draft_reply": "Bozza di prova."},
@@ -511,7 +570,16 @@ def test_patch_new_to_draft_schema(riga_guest):
     body = r.json()
     assert body["status"] == "draft"
     assert body["draft_reply"] == "Bozza di prova."
-    assert body["category"] is None  # category non e' scrivibile: intoccata
+    # post-D15 (WP10): category e' impostata dal classificatore, non scrivibile via PATCH
+    _valid_cats = {
+        "availability",
+        "cancellation",
+        "complaint",
+        "special_request",
+        "billing",
+        "info",
+    }
+    assert body["category"] in _valid_cats
 
 
 def test_patch_draft_to_sent(riga_guest):
@@ -541,13 +609,16 @@ def test_patch_solo_draft_reply(riga_guest):
         headers=HEAD_MANAGER,
     )
     assert r.status_code == 200
-    assert r.json()["status"] == "new"  # nessuna transizione implicita
+    # post-D15 (WP10): lo stato iniziale di riga 1 e' 'draft' (non 'new');
+    # PATCH senza status non fa transizione implicita
+    assert r.json()["status"] == "draft"  # nessuna transizione implicita
     assert r.json()["draft_reply"] == "solo bozza"
 
 
-@pytest.mark.parametrize("obbiettivo", ["new", "sent"])
-def test_patch_da_new_solo_verso_draft(riga_guest, obbiettivo):
-    # new->new e new->sent (salta draft) rifiutati
+@pytest.mark.parametrize("obbiettivo", ["new"])
+def test_patch_da_draft_non_verso_new(riga_guest, obbiettivo):
+    # post-D15 (WP10): lo stato iniziale e' 'draft'; draft->new e' una retrogressione vietata.
+    # draft->sent e' un passo HITL valido (rimosso dalla parametrize).
     r = client.patch(
         f"/api/guest-requests/{riga_guest}", json={"status": obbiettivo}, headers=HEAD_MANAGER
     )

@@ -1,0 +1,147 @@
+{
+  "category": {
+    "macro_f1": 0.9901,
+    "per_class": {
+      "availability": {
+        "precision": 1.0,
+        "recall": 0.9701,
+        "f1": 0.9848
+      },
+      "cancellation": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "complaint": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "special_request": {
+        "precision": 1.0,
+        "recall": 0.9699,
+        "f1": 0.9847
+      },
+      "billing": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "info": {
+        "precision": 0.9437,
+        "recall": 1.0,
+        "f1": 0.971
+      }
+    },
+    "confusion_matrix": {
+      "labels": [
+        "availability",
+        "cancellation",
+        "complaint",
+        "special_request",
+        "billing",
+        "info"
+      ],
+      "matrix": [
+        [
+          130,
+          0,
+          0,
+          0,
+          0,
+          4
+        ],
+        [
+          0,
+          133,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          133,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          129,
+          0,
+          4
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          133,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          134
+        ]
+      ]
+    }
+  },
+  "urgency": {
+    "macro_f1": 0.9659,
+    "per_class": {
+      "low": {
+        "precision": 0.9831,
+        "recall": 0.9295,
+        "f1": 0.9555
+      },
+      "medium": {
+        "precision": 0.9091,
+        "recall": 0.9778,
+        "f1": 0.9422
+      },
+      "high": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "confusion_matrix": {
+      "labels": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "matrix": [
+        [
+          290,
+          22,
+          0
+        ],
+        [
+          5,
+          220,
+          0
+        ],
+        [
+          0,
+          0,
+          263
+        ]
+      ]
+    }
+  },
+  "gold_alignment": {
+    "ids_matched": 800,
+    "ids_pred_only": [],
+    "ids_gold_only": []
+  },
+  "n_emails": 800
+}
