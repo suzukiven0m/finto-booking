@@ -74,9 +74,7 @@ def _restore_row1() -> None:
     try:
         with Session(engine) as session:
             session.execute(
-                sa.update(_GUEST_REQUESTS)
-                .where(_GUEST_REQUESTS.c.id == 1)
-                .values(status="draft")
+                sa.update(_GUEST_REQUESTS).where(_GUEST_REQUESTS.c.id == 1).values(status="draft")
             )
             session.commit()
     finally:
