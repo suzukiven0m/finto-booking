@@ -1,37 +1,69 @@
-# Buby Travel — frontend (D10 dashboard shell + D6 Prism mock)
+# Buby Travel — frontend (D10 dashboard shell + D17 real-data)
 
 React 18 + TypeScript + Vite + Tailwind CSS + Recharts (ADR 0001).
-Self-contained: runs against the Prism mock without the backend.
+Talks to the real FastAPI backend by default (see root `README.md` for the
+full startup sequence).
 
-## Run the demo
+## Run the demo (real API)
 
-All npm commands live here in `frontend/`, not at the repo root (there is no
-root package.json).
+The demo path requires the real backend running on `http://localhost:8000`.
+Follow steps 1–4 of the root README (postgres → alembic → seed → uvicorn),
+then:
 
 ```bash
 cd frontend
 npm install
-npm run demo        # Prism mock on :4010 + Vite dev server on :5173
+npm run dev        # Vite dev server on :5173, points at http://localhost:8000
 ```
 
-Open http://localhost:5173. The shell renders the KPI summary cards and the
-daily revenue/occupancy chart from the mock's baseline examples.
+Open http://localhost:5173 and log in with any demo account:
+
+| Email | Password | Role |
+|---|---|---|
+| `admin@buby.travel` | `demo` | admin |
+| `manager@buby.travel` | `demo` | manager |
+| `property.manager@buby.travel` | `demo` | property_manager |
+
+The shell renders the KPI summary cards, the daily revenue/occupancy chart,
+the reputation tab, the bookings search tab, and the guest-request inbox tab,
+all from the real seeded database.
 
 Individual commands:
 
 | Command | What it does |
 |---|---|
-| `npm run dev` | Vite dev server (:5173) |
-| `npm run mock` | Prism mock of `mock/openapi.yaml` (:4010) |
+| `npm run dev` | Vite dev server (:5173, default → `http://localhost:8000`) |
 | `npm run build` | Typecheck + production build |
 | `npm run preview` | Serve the production build |
 | `npm run typecheck` | `tsc --noEmit` |
-| `npm test` | API client tests (vitest) |
+| `npm test` | API client tests (vitest, 19 tests) |
 
-`VITE_API_BASE_URL` (default `http://localhost:4010`) points the client at the
-real FastAPI backend (`http://localhost:8000`) once D12 lands. The client logs
-in via `/api/auth/login` (the mock accepts any credentials) and sends the
-bearer token; real JWT issuance is D11.
+The `VITE_API_BASE_URL` env var overrides the default API base; `npm run dev`
+without it uses `http://localhost:8000`.
+
+## Optional: Prism mock (contract development only)
+
+Prism lets you run the frontend without the backend by serving the OpenAPI
+spec as a mock. Use it for contract-first development or when iterating on
+API shapes before the backend is available:
+
+```bash
+# terminal 1 — Prism mock on :4010
+npm run mock
+
+# terminal 2 — Vite pointed at the mock
+VITE_API_BASE_URL=http://localhost:4010 npm run dev
+```
+
+Or, in one command:
+
+```bash
+npm run demo        # Prism mock on :4010 + Vite dev server on :5173
+```
+
+The mock accepts any credentials, returns the OpenAPI baseline examples, and
+does **not** reflect changes to the real database. It is not the demo path
+for graded delivery.
 
 ## Mock contract
 
