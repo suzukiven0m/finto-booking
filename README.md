@@ -16,6 +16,9 @@ Done and verified:
 - Demand/pricing analysis (WP12)
 - **D17 swap done**: frontend talks to real FastAPI by default (`http://localhost:8000`)
 - E2E smoke in CI: seed → uvicorn → real HTTP assertions → restore
+- **D18 release artifacts (WP14)**: compose api/web services + Dockerfiles,
+  demo script + 2 rehearsals, final data report, deploy ADR 0004 (proposed,
+  accounts human-gated HA-10 — public URL pending human, demo stays local)
 
 ## Layout
 
@@ -24,10 +27,61 @@ finto-booking/
 ├── backend/     FastAPI app, schema, migrations, tests   (WSA-1)
 ├── frontend/    React + Vite dashboard     (WSA-2)
 ├── data/        ETL, generators, tests      (DA-1, DA-2, DA-3)
-├── infra/       docker-compose (Postgres)   (WSA-3)
+├── infra/       docker-compose (Postgres + API + SPA)   (WSA-3)
 └── docs/        plan, ADRs, contract, data dictionary
    .github/      CI workflows                (WSA-3)
 ```
+
+## Run with Docker (full stack)
+
+Requires Docker with Compose. One command builds and starts Postgres + API +
+web (D18/WP14):
+
+```bash
+git clone <repo-url> && cd finto-booking
+docker compose -f infra/docker-compose.yml up -d --build
+docker compose -f infra/docker-compose.yml ps   # postgres healthy, api + web up
+```
+
+- **web**: http://localhost:8080 — nginx serves the SPA and proxies `/api`
+  to the api service. The bundle is built with `VITE_API_BASE_URL=""` (empty
+  base): the client paths are already `/api/*`, so fetches are same-origin
+  with a single prefix through nginx.
+- **api**: http://localhost:8000 — the same 11 operations, also reachable
+  directly for curl/E2E.
+
+Custom credentials: if you override them via `infra/.env`, pass `POSTGRES_USER`/`POSTGRES_PASSWORD`/`POSTGRES_DB`
+to the api service too (environment override, or `docker compose run -e POSTGRES_PASSWORD=... api ...`); the default demo path needs only `POSTGRES_HOST` (config.py defaults).
+
+Migrations and seeding are **manual steps**: the images contain code only,
+no data (full datasets stay on the client drive).
+
+```bash
+# 1. schema
+docker compose -f infra/docker-compose.yml exec api alembic upgrade head
+
+# 2. seed sample: from the repo root, with a host Python 3.12 venv
+#    (backend/requirements.txt + data/requirements.txt — steps 2–3 below).
+#    The compose Postgres is reachable at localhost:5432.
+PYTHONPATH=backend backend/.venv/bin/python data/etl/load_bookings.py data/raw/sample_hotel_bookings.csv
+PYTHONPATH=backend backend/.venv/bin/python data/etl/load_reviews.py
+PYTHONPATH=backend backend/.venv/bin/python data/etl/gen_emails.py
+PYTHONPATH=backend backend/.venv/bin/python data/etl/build_kpi_daily.py
+PYTHONPATH=backend:data backend/.venv/bin/python data/etl/classify_emails.py --persist
+```
+
+Open http://localhost:8080 and log in with a demo account (step 4 below).
+With the sample seed the dashboard shows the sample baseline (3,564 valid
+bookings, €1,350,503.84); the full-dataset numbers in
+`docs/data-dictionary.md` §3 need the full CSV
+(`docs/playbooks/solo-dataset.md`). The demo script
+(`docs/demo-script.md`) cites the full baseline and says so out loud when
+running on the sample.
+
+Stop with `docker compose -f infra/docker-compose.yml down` (add `-v` only
+to delete the database volume). The host-venv path below remains the
+alternative for development; the public deploy target is ADR 0004
+(proposed, human-gated HA-10).
 
 ## Run it locally
 
@@ -37,9 +91,12 @@ Requires Docker with Compose.
 
 ```bash
 git clone <repo-url> && cd finto-booking
-docker compose -f infra/docker-compose.yml up -d
+docker compose -f infra/docker-compose.yml up -d postgres
 docker compose -f infra/docker-compose.yml ps      # postgres -> healthy
 ```
+
+Only `postgres`: the host-venv path below runs uvicorn itself on :8000, which
+would collide with the compose `api` service.
 
 Connection string: `postgresql://buby:buby@localhost:5432/buby`
 To override user, password, database or host port, copy `.env.example` to

@@ -108,7 +108,7 @@ invece di 73; tabelle complete nel JSON, `seasonality.per_property`.)
 **Lettura.** Le due strutture hanno stagionalità complementari: Lago è
 fortemente estiva (agosto occupazione 0.9172, ADR 175.86; giugno 0.8853) e in
 bassa stagione d'inverno (gennaio 0.3902, ADR 49.99); Montagna è più piatta,
-con picco di ADR a maggio (126.22) e luglio–agosto sotto la propria media
+con picco di ADR a maggio (126.22) e luglio sotto la propria media
 (luglio occupazione 0.5597 contro 0.8691 del Lago). Il picco combined di
 agosto (ricavo 25029.60 €/giorno/proprietà) e il minimo di gennaio (6149.95)
 differiscono di ~4×: il calendario prezzi è la leva di domanda più evidente.
