@@ -24,3 +24,5 @@ data/eval/review_nlp_predictions.csv
 data/eval/review_nlp_*.partial.csv
 
 playbooks/
+# MkDocs output
+site/

@@ -96,10 +96,10 @@ config.py defaults assemble URL, squash 33f02c1 → «No secrets detected»);
 undertaken. Lesson in wp14 record §4.
 
 ## Records
-Per-package loop records: docs/reviews/2026-11-19-wp{1,2,3,4,6}.md committed;
+Per-package loop records: docs/reviews/packages/2026-11-19-wp{1,2,3,4,6}.md committed;
 wp{2b,5,7a} + WP7…WP14 records drafted in /tmp, commit via final records PR.
 Rehearsals: docs/reviews/2026-11-20-demo-rehearsals.md (WP14).
-Handoff: docs/reviews/remediation-handoff.md (living state doc).
+Handoff: docs/reviews/archive/remediation-handoff.md (living state doc).
 
 ## Deviations log (honesty)
 - Admin merges with sign-off comments (single-account limitation, HA-13).

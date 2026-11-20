@@ -4,7 +4,7 @@ Questa guida porta da zero a un'applicazione funzionante sul tuo computer.
 Ogni passaggio spiega prima cosa stai facendo e perché, poi il comando.
 Se non hai mai usato Docker, un database o un'API, qui trovi le spiegazioni
 minime per capire cosa succede. Per il quadro generale del progetto leggi
-prima il [README](../README.md).
+prima la [pagina iniziale](index.md).
 
 ## 1. Cosa ti serve e perché
 

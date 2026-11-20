@@ -1,5 +1,14 @@
 # Buby Travel (finto-booking)
 
+[![CI](https://github.com/suzukiven0m/finto-booking/actions/workflows/ci.yml/badge.svg)](https://github.com/suzukiven0m/finto-booking/actions/workflows/ci.yml)
+
+> Dashboard occupazione e reputazione, ricerca prenotazioni e assistente per le
+> richieste degli ospiti. Progetto di laboratorio, caso 1 (Turismo) di Buby Group.
+
+**Link rapidi:** [Guida per iniziare](docs/getting-started.md) ·
+[Architettura](docs/architettura/README.md) · [Glossario](docs/glossario.md) ·
+[Contratto API](docs/api-contract.md) · [Come contribuire](CONTRIBUTING.md)
+
 Questo repository è il nostro progetto di laboratorio per il caso 1 (Turismo)
 di Buby Group. Siamo un team misto di due corsi: Data Analyst / AI Specialist
 (DA) e Web Solutions Architect (WSA). I DA preparano e analizzano i dati, i WSA
@@ -142,6 +151,8 @@ stesse chiamate che fa la dashboard.
 ## Documentazione
 
 - [Guida per iniziare](docs/getting-started.md): installazione e primo avvio, spiegati passo passo.
+- [Glossario](docs/glossario.md): i termini tecnici spiegati in due righe, per il team misto.
+- [Architettura](docs/architettura/README.md): diagramma D2 e un documento di rationale per ogni elemento.
 - [Dizionario dati](docs/data-dictionary.md): ogni campo, ogni regola KPI, le assunzioni.
 - [ERD](docs/erd.md): lo schema del database in un diagramma.
 - [Contratto API](docs/api-contract.md): convenzioni, autenticazione, ruoli, disclosure.

@@ -6,6 +6,8 @@ domanda: **perché l'abbiamo disegnato così?** Non basta dire cosa fa un pezzo:
 spieghiamo quale problema risolve, quali alternative abbiamo scartato e quali
 vincoli (brief, contratto, decisioni del team) hanno guidato la scelta.
 
+![Diagramma dell'architettura](../img/architettura.svg)
+
 ## Come leggere il diagramma
 
 Il diagramma è scritto in [D2](https://d2lang.com), un linguaggio testuale per
@@ -53,7 +55,7 @@ mock, valutazione che legge il gold).
 
 ## Da dove partire
 
-Se sei nuovo: [README](../../README.md) per il quadro generale e i passi di
+Se sei nuovo: [pagina iniziale](../index.md) per il quadro generale e i passi di
 avvio. La guida dettagliata `docs/getting-started.md` (se presente nel tuo
 branch) spiega ogni passaggio per esteso. Se vuoi capire una scelta tecnica:
 il documento dell'elemento qui sopra, poi l'ADR citato dentro.
