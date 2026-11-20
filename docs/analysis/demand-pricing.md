@@ -305,7 +305,7 @@ sui prezzi). Per la metà previsionale il cliente sceglie al SAL 1
 
 - Cosa: media mobile sui `kpi_daily` per proprietà (il piano stretch chiede
   property × settimana, `docs/plan.md` §Stretch #6; D16 è «demand forecast
-  baseline (moving average)», delivery-plan §7). Output: previsione di
+  baseline (moving average)», delivery-plan §2). Output: previsione di
   room-nights/ricavo/occupazione con backtest sul 2017 e errore misurato
   (MAE/MAPE). Nessuna dipendenza nuova (pandas già pinned), nessun cambio
   schema (output al momento della query, pattern S8).
