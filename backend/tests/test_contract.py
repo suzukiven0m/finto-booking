@@ -508,7 +508,58 @@ def riga_guest(db):
     db.commit()
 
 
-def test_patch_new_to_draft_schema(riga_guest):
+@pytest.fixture
+def riga_new(db):
+    """Forza riga 1 a status='new', ripristina lo stato originale a fine test (P1)."""
+    originale = db.execute(
+        select(
+            GuestRequest.status,
+            GuestRequest.draft_reply,
+            GuestRequest.category,
+            GuestRequest.urgency,
+        ).where(GuestRequest.id == 1)
+    ).one()
+    db.execute(update(GuestRequest).where(GuestRequest.id == 1).values(status="new"))
+    db.commit()
+    yield 1
+    db.execute(
+        update(GuestRequest)
+        .where(GuestRequest.id == 1)
+        .values(
+            status=originale[0],
+            draft_reply=originale[1],
+            category=originale[2],
+            urgency=originale[3],
+        )
+    )
+    db.commit()
+
+
+def test_patch_transizioni_da_new(riga_new):
+    """Matrice da status='new': new->new 422, new->sent 422, new->draft 200+schema."""
+    url = f"/api/guest-requests/{riga_new}"
+
+    # new->new: ciclo vietato
+    r = client.patch(url, json={"status": "new"}, headers=HEAD_MANAGER)
+    assert_errore(r, 422, "validation_error")
+
+    # new->sent: salta draft, vietato dal HITL workflow
+    r = client.patch(url, json={"status": "sent"}, headers=HEAD_MANAGER)
+    assert_errore(r, 422, "validation_error")
+
+    # new->draft: happy path (lo stato e' ancora 'new' perche' i due PATCH sopra fallirono)
+    r = client.patch(
+        url,
+        json={"status": "draft", "draft_reply": "Bozza da new."},
+        headers=HEAD_MANAGER,
+    )
+    assert r.status_code == 200
+    valida(r.json(), "GuestRequest")
+    assert r.json()["status"] == "draft"
+    assert r.json()["draft_reply"] == "Bozza da new."
+
+
+def test_patch_draft_to_draft_schema(riga_guest):
     r = client.patch(
         f"/api/guest-requests/{riga_guest}",
         json={"status": "draft", "draft_reply": "Bozza di prova."},

@@ -187,7 +187,12 @@ def compute_metrics(predictions: list[dict], gold: dict[int, dict]) -> dict:
 
 
 def _persist(predictions: list[dict]) -> int:
-    """Scrive category, urgency, draft_reply e status=draft nel DB. Idempotente."""
+    """Scrive category, urgency, draft_reply e status=draft nel DB.
+
+    Idempotente e HITL-safe: le righe con status='sent' non vengono mai
+    sovrascritte — una risposta gia' approvata e inviata dall'operatore non
+    torna in bozza a causa di un re-run del classificatore.
+    """
     url = DATABASE_URL.replace("postgresql+psycopg://", "postgresql://")
     written = 0
     with psycopg.connect(url) as conn, conn.cursor() as cur:
@@ -195,7 +200,7 @@ def _persist(predictions: list[dict]) -> int:
             cur.execute(
                 "UPDATE guest_requests "
                 "SET category=%s, urgency=%s, draft_reply=%s, status='draft' "
-                "WHERE id=%s",
+                "WHERE id=%s AND status != 'sent'",
                 (p["category"], p["urgency"], p["draft"], p["id"]),
             )
             written += cur.rowcount

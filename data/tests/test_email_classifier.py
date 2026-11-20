@@ -483,3 +483,20 @@ def test_compute_metrics_confusion_matrix_diagonale() -> None:
             if lbl in labels and lbl2 in labels:
                 expected = 1 if lbl == lbl2 else 0
                 assert cm[i][j] == expected, f"cm[{lbl}][{lbl2}] = {cm[i][j]}, atteso {expected}"
+
+
+def test_persist_guard_esclude_sent() -> None:
+    """_persist UPDATE ha AND status != 'sent': le righe gia' inviate non vengono sovrascritte.
+
+    Verifica statica sul sorgente: garantisce che un re-run del classificatore
+    non sovrascriva mai una risposta gia' approvata e inviata dall'operatore HITL.
+    """
+    import inspect
+
+    from etl.classify_emails import _persist
+
+    source = inspect.getsource(_persist)
+    assert "status != 'sent'" in source, (
+        "_persist deve escludere status='sent' dall'UPDATE "
+        "(HITL guard: le risposte inviate non tornano in bozza)"
+    )

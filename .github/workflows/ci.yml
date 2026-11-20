@@ -98,8 +98,16 @@ jobs:
           PYTHONPATH=backend python data/etl/load_reviews.py
           PYTHONPATH=backend python data/etl/gen_emails.py
 
+      - name: D15 classify + persist
+        # gen_emails.py ha appena rigenerato il gold nello stesso run:
+        # IDs allineati. Classifica e scrive status=draft prima dei test
+        # che verificano la semantica post-D15.
+        run: >-
+          PYTHONPATH=backend:data
+          python data/etl/classify_emails.py --persist
+
       - name: Data tests
-        run: PYTHONPATH=backend pytest -q data/tests
+        run: PYTHONPATH=backend:data pytest -q data/tests
 
       - name: API tests on sample
         # WP8: dopo il seed il baseline campione (5000 righe) finalmente gira

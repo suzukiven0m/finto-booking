@@ -85,7 +85,25 @@ Allineamento completo: `ids_matched == n_emails` OK
 
 ---
 
-## 5. Percorso di upgrade LLM (gated su O2/HA-05)
+## 5. Semantica di --persist e HITL guard
+
+`--persist` scrive `category`, `urgency`, `draft_reply` e `status=draft` per ogni
+email. L'operazione e' **idempotente e HITL-safe**: l'`UPDATE` include la clausola
+`AND status != 'sent'`, quindi le righe gia' approvate e inviate dall'operatore
+non vengono mai sovrascritte da un re-run del classificatore.
+
+| Stato iniziale riga | Dopo --persist |
+|---|---|
+| `new` (nuova email) | `draft` + predizioni scritte |
+| `draft` (bozza) | `draft` + predizioni aggiornate |
+| `sent` (inviata) | **invariata** -- HITL guard |
+
+Verificato da `test_persist_guard_esclude_sent` in
+`data/tests/test_email_classifier.py` (source inspection, no DB needed).
+
+---
+
+## 6. Percorso di upgrade LLM (gated su O2/HA-05)
 
 L'upgrade da classificatore lessicale a LLM (es. GPT-4o, Mistral via API)
 e' bloccato sulla decisione umana **HA-05** (chiavi LLM + chi paga, scaduta
