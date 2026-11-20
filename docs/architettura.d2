@@ -1,0 +1,127 @@
+# Architettura di Buby Travel (finto-booking)
+#
+# Ogni elemento ha un documento dedicato in docs/architettura/ che spiega
+# perché è stato disegnato così. Nell'SVG i link sono cliccabili.
+#
+# Renderizzare:
+#   d2 docs/architettura.d2 docs/architettura.svg
+#   d2 --watch docs/architettura.d2   (anteprima live nel browser)
+#
+# Installare d2: https://d2lang.com/tour/install
+
+direction: down
+
+classes: {
+  client: {style: {fill: "#e8f0fe"; stroke: "#4a6fa5"; border-radius: 8}}
+  serving: {style: {fill: "#e6f4ea"; stroke: "#3c7850"; border-radius: 8}}
+  dati: {style: {fill: "#fef7e0"; stroke: "#a07830"; border-radius: 8}}
+  contratto: {style: {fill: "#fce8e6"; stroke: "#a05040"; border-radius: 8}}
+  processo: {style: {fill: "#f3e8fd"; stroke: "#7a5aa0"; border-radius: 8}}
+}
+
+browser: Browser (studente o cliente) {
+  class: client
+  spa: "SPA React: Dashboard, Reputazione, Ricerca, Inbox" {
+    link: docs/architettura/spa-react.md
+    tooltip: "Quattro schede, sessione JWT in sessionStorage, disclosure in fondo a ogni pagina."
+  }
+}
+
+compose: "Docker Compose (infra/docker-compose.yml)" {
+  class: serving
+  link: docs/architettura/docker-compose.md
+
+  web: "nginx :8080 (serve la SPA, proxy /api)" {
+    link: docs/architettura/nginx-proxy.md
+  }
+  api: "FastAPI :8000 (11 operazioni del contratto)" {
+    link: docs/architettura/api-fastapi.md
+  }
+  auth: "Autenticazione JWT + matrice dei 3 ruoli" {
+    link: docs/architettura/auth-jwt-ruoli.md
+  }
+  postgres: "PostgreSQL 16 (5 tabelle, schema v1)" {
+    link: docs/architettura/database-postgres.md
+  }
+}
+
+migrations: "Alembic: migrazioni 0001-0005" {
+  class: serving
+  link: docs/architettura/migrazioni-alembic.md
+}
+
+dati: "Pipeline dati (data/, team DA)" {
+  class: dati
+
+  etl: "ETL: bookings, reviews, email sintetiche, kpi_daily" {
+    link: docs/architettura/etl-pipeline.md
+  }
+  classifier: "Classificatore email D15 + bozze (--persist)" {
+    link: docs/architettura/classificatore-email.md
+  }
+  nlp: "NLP recensioni D14: sentiment, topic, sintesi (query-time)" {
+    link: docs/architettura/nlp-recensioni.md
+  }
+  eval: "Valutazione e anti-leakage (data/eval/)" {
+    link: docs/architettura/valutazione-anti-leakage.md
+  }
+}
+
+contratto: "Contratto dati (congelato v1.0.0 al SAL 1)" {
+  class: contratto
+
+  openapi: "openapi.yaml: single source of truth" {
+    link: docs/architettura/contratto-openapi.md
+  }
+  mock: "Mirror frontend/mock + Prism (solo sviluppo)" {
+    link: docs/architettura/mock-prism.md
+  }
+  tests: "Contract test: risposte validate contro lo schema" {
+    link: docs/architettura/contract-tests.md
+  }
+}
+
+ci: "GitHub Actions: lint, migrazioni, seed, test, E2E" {
+  class: contratto
+  link: docs/architettura/ci-github-actions.md
+}
+
+processo: "Processo: SAL 1, ADR, registro delle azioni umane" {
+  class: processo
+  link: docs/architettura/processo-governance.md
+}
+
+# Flusso delle richieste (dal browser ai dati)
+browser.spa -> compose.web: "HTTP :8080, chiamate /api sulla stessa origine"
+compose.web -> compose.api: "proxy_pass /api verso :8000"
+browser.spa -> compose.api: "in sviluppo: VITE_API_BASE_URL=http://localhost:8000" {
+  style.stroke-dash: 3
+}
+compose.api -> compose.auth: "verifica gettone e ruolo a ogni rotta protetta"
+compose.api -> compose.postgres: "SQL con parametri legati (SQLAlchemy Core)"
+
+# Schema e dati
+migrations -> compose.postgres: "applica lo schema 0001-0005"
+dati.etl -> compose.postgres: "carica le tabelle (dedup sulle 32 colonne originali)"
+dati.classifier -> compose.postgres: "scrive category, urgency, draft_reply; status=draft"
+dati.nlp -> compose.postgres: "legge i body delle recensioni (sola lettura)"
+dati.eval -> compose.postgres: "legge i voti reali come weak labels"
+dati.classifier -> dati.eval: "il gold si legge solo in valutazione, mai nella pipeline" {
+  style.stroke-dash: 3
+}
+dati.nlp -> dati.eval: "metriche JSON (correlazioni, F1, confusion matrix)"
+
+# Contratto
+contratto.openapi -> contratto.mock: "cp byte-identical a ogni modifica"
+contratto.mock -> browser.spa: "solo modalità mock: non è il percorso demo" {
+  style.stroke-dash: 3
+}
+contratto.tests -> compose.api: "valida tutte le 11 operazioni (CI)"
+contratto.openapi -> contratto.tests: "schema ed esempi pinned come riferimento"
+
+# CI e processo
+ci -> migrations: "round-trip e downgrade su database vuoto"
+ci -> dati.etl: "seed del campione committato"
+ci -> dati.classifier: "D15 --persist prima dei test"
+ci -> browser.spa: "job frontend: vitest, typecheck, build"
+processo -> contratto.openapi: "freeze SAL 1: v1.0.0, poi contract-bump protocol"
