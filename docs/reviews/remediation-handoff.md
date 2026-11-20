@@ -20,7 +20,34 @@ reviewer → fix → merge; audit backlog `2026-11-19-shepherd-audit.md`).
 - Live DB `buby` at 0005, seeded, baseline exact (61777/218410/€22976960.13/105.20/0.2749).
 - Tagged-master suite green: backend 28+1skip, data 12, frontend 3+tsc+build, lint, mirror.
 
-## IN FLIGHT (updated ~18:30 after second host-level crash: all runners SIGTERM'd simultaneously)
+## OPERATING MODE (operator directive 2026-11-19 ~19:30): SEQUENTIAL agents only, minimize RAM
+
+Host has 7.5GB RAM; parallel agents + node + docker sidecars triggered OOM SIGTERMs
+(three mass-crashes). Rules now: ONE child agent at a time; no parallel docker runs;
+children must kill dev servers after use and never load NLP models (inference done,
+predictions on disk in WP9 worktree). Child model fallback (operator-approved):
+openrouter/anthropic/claude-sonnet-4.6 (session model qwen4-max hit provider 429 quota).
+Resume keeps the OLD model — to switch model, launch a FRESH child with checkpoint brief.
+
+## STATE ~19:30
+
+- Merged: #11/#12/#9/#10/#13/#14/#16/#15/#17 (P0) + #18 WP7 auth (c532e22) + #20 WP12
+  demand memo (625aefd) + #21 WP8 11/11 ops (fd668bf). **v1.0.0 RE-TAGGED on fd668bf**
+  (WP8a corrected reviews/summary examples pre-freeze). Merged-master suite green:
+  backend 140+1skip, data 38, frontend 13+tsc+build, mirror, lint.
+- WP9 fix pass COMMITTED+PUSHED f45776e (runner died before report; orchestrator verified:
+  probe_precisions in metrics JSON, runtime labels fixed, annotations CSV committed,
+  correlations unchanged 0.5517/0.5894, 23 tests, lint). Focused re-review running
+  (run 4d802f9d, fallback model). On APPROVE → merge #19.
+- WP10/WP11 children died at startup (OOM) — NO work done. WP10 worktree exists
+  (pi-worktree-80e632a5-…-s0-0, clean @ fd668bf, auto-named branch — rename or reuse).
+  WP11 not started. RUN THEM SEQUENTIALLY after #19 merges: WP10 first (worktree child),
+  then WP11 (main checkout child). Briefs: see session history 2026-11-19 ~19:00
+  (WP10: classifier fallback + drafts status=draft + anti-leakage test evolution to
+  post-D15 semantics; WP11: reputation/search/inbox tabs, 2012-only label, HITL, 403-aware).
+- WP12 worktree still on disk (merged; .venv untracked — leave or force-remove).
+
+## IN FLIGHT (legacy ids below superseded by STATE above)
 
 Recovery pattern that works: inspect on-disk state (worktrees survive), resume if handoff
 record exists, else fresh worker with cwd=worktree + checkpoint brief. WP9 inference
