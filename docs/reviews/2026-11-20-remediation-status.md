@@ -47,7 +47,7 @@ Sequential-agent mode after host OOM crashes (operator directive).
 | R7 working web app on real data | **closed** | WP13/PR #24 (c51daac): default :8000, E2E in CI green, zero Prism in demo path |
 | R8 auth | **closed** | WP7/PR #18 (c532e22): real JWT, 3 roles, 401/403 enforced, operator matrix frozen (WP7a/PR #17) |
 | R9 frontend dashboard/search/viz | **closed** | WP11: 4 tabs, 19 tests |
-| R10 integration/test/release | **closed (agent side); deploy human-gated** | CI backend+frontend+E2E; WP14 compose/Dockerfiles/demo/rehearsals verified (bundle-level); deploy HA-10; GG incident 39943867 human resolution pending |
+| R10 integration/test/release | **closed (agent side); deploy human-gated** | CI backend+frontend+E2E; WP14 compose/Dockerfiles/demo/rehearsals verified (bundle-level); deploy HA-10; GG incident 39943867 cleared agent-side via content removal (POSTGRES_HOST-only env + squash) |
 | R11 DA deliverables | **closed** | final report (WP14) aggregates; dictionary/scripts/eval committed |
 | R12 model/LLM + responsible AI | **closed (fallback); LLM human-gated** | WP9/WP10 evals honest; O2 keys HA-05 overdue |
 | R13 collaboration/staffing | **human-gated** | HA-03 notification + HA-04 reassignment (names+dates) — agents cannot send/sign |
@@ -71,7 +71,7 @@ hand-written/wrong → corrected pre-freeze WP8a (row-by-row verified vs source)
 5 reassignment+notification **human-gated** (HA-03/04) · 6 D11 auth **done** (WP7;
 §11 cuttable line struck) · 7 D14/D15+O2 **done fallback; O2 human-gated** (HA-05) ·
 8 remaining ops+contract tests **done** (WP8) · 9 D17 swap+E2E **done** (WP13) ·
-10 D18 release **done agent-side; GG gate + accounts human** (WP14; HA-10, incident 39943867, rehearsals recorded).
+10 D18 release **done agent-side; accounts human** (WP14 merged c62735d; HA-10; GG gate cleared via restructure; rehearsals recorded).
 
 ## Merged PRs (all CI green + independent sign-off comments)
 #11 WP1 · #12 WP2 · #9 API · #10 login · #13 WP6 ledger · #14 WP4 docs · #16 WP2b ·
@@ -89,10 +89,11 @@ HA-03 solo notification · HA-04 reassignment (D14 owner first) · HA-06 O1 NDA/
 HA-07 O3 ownership · HA-11 present SAL 1 · HA-14 §11 contradictions (auth half resolved
 by implementation; forecast half → WP12 memo options).
 Future: HA-12 demo+2 rehearsals attendance · HA-13 second gh account for PR approval.
-NEW (to add): OpenRouter credits top-up (fallback model 402'd 2026-11-20) ·
-GitGuardian incident 39943867 dashboard resolution (operator in progress; the
-committed .gitguardian.yaml covers ggshield CLI only — dashboard PR integration
-needs server-side resolution/ignore-rule).
+NEW: HA-15 OpenRouter credits top-up (fallback model 402'd 2026-11-20).
+GitGuardian incident 39943867: **cleared agent-side** (POSTGRES_HOST-only env,
+config.py defaults assemble URL, squash 33f02c1 → «No secrets detected»);
+.gitguardian.yaml committed then REMOVED (superseded); dashboard resolution never
+undertaken. Lesson in wp14 record §4.
 
 ## Records
 Per-package loop records: docs/reviews/2026-11-19-wp{1,2,3,4,6}.md committed;
@@ -110,9 +111,11 @@ Handoff: docs/reviews/remediation-handoff.md (living state doc).
   OpenRouter 402 credits → session model recovered. Host OOM SIGTERMs ×3 → sequential
   mode + checkpoint briefs; no work lost (checkpoint pattern).
 - GitGuardian: WP7 demo-password literal cleared via squash-rewrite (tree-identity
-  proven); WP14 compose dev-default incident 39943867 NOT clearable by repo ignore
-  file or rewrite (dashboard integration) → operator resolving in dashboard; lesson
-  recorded in wp14 record §4.
+  proven). WP14 compose dev-default incident 39943867: repo ignore file NOT honored
+  by dashboard PR integration; squash alone insufficient (re-trigger); standalone
+  interpolation ALSO flags in new content; FINAL fix = POSTGRES_HOST-only env
+  (config.py published defaults assemble the URL) + squash → «No secrets detected».
+  Dashboard resolution never undertaken; lesson in wp14 record §4.
 - WP14 P0 (SPA double-prefix) caught by independent review AFTER orchestrator's
   API-only compose smoke — bundle-level verification added; rehearsal record
   discloses the miss honestly (entry 3).

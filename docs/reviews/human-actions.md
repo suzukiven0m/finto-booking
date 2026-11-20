@@ -41,7 +41,7 @@ pronti (WP7 implementato, memo WP12 in docs/analysis/demand-pricing.md §10).
 ## Mappatura audit §8 → ledger
 
 Ogni azione ranked 1–10 dell'audit §8 è mappata su almeno una riga. Dove l'azione ha una
-parte tecnica, quella è dei WP agent (stato nel report di remediation, in arrivo);
+parte tecnica, quella è dei WP agent (stato nel report di remediation);
 qui resta il gate umano che la protegge.
 
 | Audit §8 | Azione (sintesi) | Righe ledger | Parte agent / nota |
@@ -61,6 +61,6 @@ qui resta il gate umano che la protegge.
 
 - Audit: `docs/reviews/2026-11-19-shepherd-audit.md` §8 (azioni ranked 1–10, tutte
   mappate sopra), §5 (staffing nominato), §6 (contraddizioni brief ↔ piano).
-- Stato di remediation dei WP: `docs/reviews/2026-11-19-remediation-status.md` (in arrivo).
+- Stato di remediation dei WP: `docs/reviews/2026-11-20-remediation-status.md`.
 - Registro comunicazioni cliente: `docs/client-comms.md` — le copie inviate si
   archiviano lì; questo ledger punta all'evidenza, non la duplica.
