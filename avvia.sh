@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # accende database, api e dashboard con un solo comando (mac e linux): ./avvia.sh
-# PROVVISORIO: quando il docker compose accendera' anche api e dashboard si toglie.
+# compose ora ha anche api e web: qui si accende SOLO postgres, per non
+# collide con la 8000 delle api host (questo script resta il percorso venv).
 # la prima volta bisogna fare l'installazione (backend/lavoro_svolto.md)
 # ctrl+c spegne api e dashboard, il database resta acceso
 
@@ -25,7 +26,7 @@ for porta in 8000 5173; do
 done
 
 echo "accendo il database..."
-docker compose -f infra/docker-compose.yml up -d --wait
+docker compose -f infra/docker-compose.yml up -d --wait postgres
 
 echo "accendo le api su http://localhost:8000 (elenco su /docs)..."
 (cd backend && exec .venv/bin/uvicorn app.main:app --reload --port 8000) &

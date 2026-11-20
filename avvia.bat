@@ -1,6 +1,7 @@
 @echo off
 rem accende database, api e dashboard con un solo comando (windows): avvia.bat
-rem PROVVISORIO: quando il docker compose accendera' anche api e dashboard si toglie.
+rem compose ora ha anche api e web: qui si accende SOLO postgres, per non
+rem collide con la 8000 delle api host (questo script resta il percorso venv).
 rem la prima volta bisogna fare l'installazione (backend\lavoro_svolto.md)
 rem le api si aprono in un'altra finestra: per spegnerle basta chiuderla.
 rem ctrl+c qui spegne la dashboard, il database resta acceso
@@ -29,7 +30,7 @@ if not errorlevel 1 (
 )
 
 echo accendo il database...
-docker compose -f infra/docker-compose.yml up -d --wait
+docker compose -f infra/docker-compose.yml up -d --wait postgres
 if errorlevel 1 exit /b 1
 
 echo accendo le api su http://localhost:8000 in un'altra finestra...

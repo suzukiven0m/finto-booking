@@ -18,5 +18,36 @@ services:
       timeout: 3s
       retries: 10
 
+  # D18 (WP14): API + SPA. Migrazioni e seed restano passi manuali documentati
+  # (README «Run with Docker»): le immagini contengono solo codice, niente dati.
+  api:
+    build: ../backend
+    container_name: buby-api
+    environment:
+      # Credenziali: i default di config.py (buby/buby/buby, pubblicati in
+      # docs/api-contract.md). Per credenziali custom via .env, passa
+      # esplicitamente POSTGRES_USER/PASSWORD/DB anche al servizio api
+      # (README «Run with Docker»).
+      POSTGRES_HOST: postgres
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ../frontend
+      args:
+        # base vuota: il bundle chiama fetch("/api/...") same-origin (prefisso
+        # unico, le path del client sono gia' /api/*); nginx proxya ad api:8000.
+        # Con "/api" qui il browser chiamerebbe /api/api/* (doppio prefisso).
+        VITE_API_BASE_URL: ""
+    container_name: buby-web
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+
 volumes:
   pgdata:
