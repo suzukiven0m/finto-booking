@@ -3,3 +3,17 @@
 # docs/playbooks/solo-dataset.md §2. versioni fissate come in backend/requirements.txt.
 pandas==3.1.1
 psycopg[binary]==3.3.9
+
+# NLP recensioni (D14, data/etl/nlp.py): modelli preaddestrati, solo inferenza CPU.
+# torch dalla index CPU: la wheel PyPI standard su Linux trascina le dipendenze
+# CUDA (~2 GB); +cpu evita quel download in CI e in locale. I pesi dei modelli
+# NON sono qui: si scaricano da HuggingFace al primo run (revision fissate nel
+# codice) e il run completo non e' un passo di CI (~2 GB di pesi per esecuzione).
+# Installazione locale con uv: --index-strategy unsafe-best-match, perche' con
+# la strategia first-index il pin torch==2.9.1+cpu (presente solo sulla index
+# PyTorch) viene cercato prima su PyPI e la risoluzione fallisce.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.9.1+cpu
+transformers==4.57.6
+# spearman di pandas 3 passa da scipy.stats: senza scipy compute_metrics rompe
+scipy==1.17.1

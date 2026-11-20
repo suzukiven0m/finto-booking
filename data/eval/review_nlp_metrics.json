@@ -1,0 +1,377 @@
+{
+  "coverage": {
+    "reviews_total": 1638,
+    "bodies_processed": 1638,
+    "null_bodies": 0
+  },
+  "models": {
+    "sentiment": {
+      "name": "cardiffnlp/twitter-xlm-roberta-base-sentiment-multilingual",
+      "revision": "82107f4ccba672c9ab1eee538e727e462cad21de"
+    },
+    "topics": {
+      "name": "facebook/bart-large-mnli",
+      "revision": "d7645e127eaf1aefc7862fd59a17a5aa8558b8ce"
+    }
+  },
+  "libraries": {
+    "transformers": "4.57.6",
+    "torch": "2.9.1+cpu",
+    "pandas": "3.1.1"
+  },
+  "seed": 42,
+  "inference": {
+    "device": "cpu",
+    "dtype": "float32",
+    "threads": 4,
+    "sentiment_batch_bodies": 32,
+    "topics_batch_bodies": 6,
+    "topics_batch_order": "lunghezza token crescente (meno padding)",
+    "phases": "sequenziali, un modello per volta (RAM)"
+  },
+  "truncation": {
+    "sentiment": {
+      "max_tokens": 512,
+      "n_truncated": 112,
+      "rate": 0.0684
+    },
+    "topics": {
+      "max_tokens": 256,
+      "n_truncated": 420,
+      "rate": 0.2564
+    }
+  },
+  "runtime_seconds": {
+    "sentiment": 1177.7,
+    "topics": 8466.0,
+    "total": 9645.3,
+    "note": "questa invocazione; con --resume non include le passate precedenti"
+  },
+  "sentiment": {
+    "score_definition": "P(positive) - P(negative) in [-1, 1]; label = argmax delle 3 classi",
+    "label_counts": {
+      "pooled": {
+        "negative": 352,
+        "neutral": 477,
+        "positive": 809
+      },
+      "per_property": {
+        "1": {
+          "negative": 196,
+          "neutral": 277,
+          "positive": 289
+        },
+        "2": {
+          "negative": 156,
+          "neutral": 200,
+          "positive": 520
+        }
+      }
+    },
+    "correlations": {
+      "pooled": {
+        "overall": {
+          "n": 1638,
+          "spearman": 0.5517,
+          "pearson": 0.5894
+        },
+        "cleanliness": {
+          "n": 1638,
+          "spearman": 0.4154,
+          "pearson": 0.4579
+        },
+        "value": {
+          "n": 1638,
+          "spearman": 0.4396,
+          "pearson": 0.4999
+        },
+        "location": {
+          "n": 1638,
+          "spearman": 0.2126,
+          "pearson": 0.223
+        },
+        "rooms": {
+          "n": 1638,
+          "spearman": 0.4565,
+          "pearson": 0.5057
+        },
+        "sleep_quality": {
+          "n": 1638,
+          "spearman": 0.4082,
+          "pearson": 0.4438
+        }
+      },
+      "per_property": {
+        "1": {
+          "overall": {
+            "n": 762,
+            "spearman": 0.6266,
+            "pearson": 0.6217
+          },
+          "cleanliness": {
+            "n": 762,
+            "spearman": 0.514,
+            "pearson": 0.5154
+          },
+          "value": {
+            "n": 762,
+            "spearman": 0.5593,
+            "pearson": 0.5624
+          },
+          "location": {
+            "n": 762,
+            "spearman": 0.2838,
+            "pearson": 0.2625
+          },
+          "rooms": {
+            "n": 762,
+            "spearman": 0.5819,
+            "pearson": 0.5771
+          },
+          "sleep_quality": {
+            "n": 762,
+            "spearman": 0.5035,
+            "pearson": 0.4914
+          }
+        },
+        "2": {
+          "overall": {
+            "n": 876,
+            "spearman": 0.437,
+            "pearson": 0.5171
+          },
+          "cleanliness": {
+            "n": 876,
+            "spearman": 0.2633,
+            "pearson": 0.3311
+          },
+          "value": {
+            "n": 876,
+            "spearman": 0.2673,
+            "pearson": 0.3678
+          },
+          "location": {
+            "n": 876,
+            "spearman": 0.2055,
+            "pearson": 0.2448
+          },
+          "rooms": {
+            "n": 876,
+            "spearman": 0.2862,
+            "pearson": 0.3808
+          },
+          "sleep_quality": {
+            "n": 876,
+            "spearman": 0.3416,
+            "pearson": 0.4224
+          }
+        }
+      }
+    }
+  },
+  "topics": {
+    "technique": "zero-shot NLI multi-label (facebook/bart-large-mnli)",
+    "hypothesis_template": "This review discusses {}.",
+    "thresholds": {
+      "cleanliness": 0.7,
+      "staff": 0.55,
+      "location": 0.7,
+      "breakfast": 0.5,
+      "noise": 0.9,
+      "value": 0.85
+    },
+    "threshold_calibration": {
+      "probe_n": 20,
+      "selection": "soglia per-topic di massimo F1 sulla probe, dentro il plateau ottimo",
+      "annotations": "data/eval/topic_probe_annotations.csv",
+      "probe_f1": {
+        "cleanliness": 0.889,
+        "staff": 0.929,
+        "location": 0.88,
+        "breakfast": 0.909,
+        "noise": 0.933,
+        "value": 0.857
+      },
+      "probe_precisions": {
+        "at_thresholds": {
+          "cleanliness": 0.889,
+          "staff": 1.0,
+          "location": 0.917,
+          "breakfast": 1.0,
+          "noise": 1.0,
+          "value": 0.818
+        },
+        "at_0.5": {
+          "cleanliness": 0.8,
+          "staff": 0.929,
+          "location": 0.688,
+          "breakfast": 1.0,
+          "noise": 0.667,
+          "value": 0.526
+        }
+      },
+      "caveat": "probe piccola, stesso corpus, annotatore unico: F1 ottimistico"
+    },
+    "dimension_map": {
+      "cleanliness": "cleanliness",
+      "staff": null,
+      "location": "location",
+      "breakfast": null,
+      "noise": "sleep_quality",
+      "value": "value"
+    },
+    "prevalence": {
+      "pooled": {
+        "cleanliness": 0.4664,
+        "staff": 0.6862,
+        "location": 0.6813,
+        "breakfast": 0.2265,
+        "noise": 0.1783,
+        "value": 0.7912
+      },
+      "per_property": {
+        "1": {
+          "cleanliness": 0.3714,
+          "staff": 0.7283,
+          "location": 0.6273,
+          "breakfast": 0.1549,
+          "noise": 0.1654,
+          "value": 0.7231
+        },
+        "2": {
+          "cleanliness": 0.5491,
+          "staff": 0.6495,
+          "location": 0.7283,
+          "breakfast": 0.2888,
+          "noise": 0.1895,
+          "value": 0.8505
+        }
+      }
+    },
+    "dimension_patterns": {
+      "pooled": [
+        {
+          "topic": "cleanliness",
+          "dimension": "cleanliness",
+          "n_mentioned": 764,
+          "n_not_mentioned": 874,
+          "mean_dim_mentioned": 4.482,
+          "mean_dim_not_mentioned": 4.31,
+          "delta": 0.172
+        },
+        {
+          "topic": "location",
+          "dimension": "location",
+          "n_mentioned": 1116,
+          "n_not_mentioned": 522,
+          "mean_dim_mentioned": 4.562,
+          "mean_dim_not_mentioned": 4.492,
+          "delta": 0.07
+        },
+        {
+          "topic": "noise",
+          "dimension": "sleep_quality",
+          "n_mentioned": 292,
+          "n_not_mentioned": 1346,
+          "mean_dim_mentioned": 3.596,
+          "mean_dim_not_mentioned": 4.292,
+          "delta": -0.696
+        },
+        {
+          "topic": "value",
+          "dimension": "value",
+          "n_mentioned": 1296,
+          "n_not_mentioned": 342,
+          "mean_dim_mentioned": 4.048,
+          "mean_dim_not_mentioned": 3.243,
+          "delta": 0.805
+        }
+      ],
+      "per_property": {
+        "1": [
+          {
+            "topic": "cleanliness",
+            "dimension": "cleanliness",
+            "n_mentioned": 283,
+            "n_not_mentioned": 479,
+            "mean_dim_mentioned": 4.11,
+            "mean_dim_not_mentioned": 4.111,
+            "delta": -0.001
+          },
+          {
+            "topic": "location",
+            "dimension": "location",
+            "n_mentioned": 478,
+            "n_not_mentioned": 284,
+            "mean_dim_mentioned": 4.638,
+            "mean_dim_not_mentioned": 4.592,
+            "delta": 0.046
+          },
+          {
+            "topic": "noise",
+            "dimension": "sleep_quality",
+            "n_mentioned": 126,
+            "n_not_mentioned": 636,
+            "mean_dim_mentioned": 3.651,
+            "mean_dim_not_mentioned": 4.277,
+            "delta": -0.626
+          },
+          {
+            "topic": "value",
+            "dimension": "value",
+            "n_mentioned": 551,
+            "n_not_mentioned": 211,
+            "mean_dim_mentioned": 3.613,
+            "mean_dim_not_mentioned": 2.953,
+            "delta": 0.66
+          }
+        ],
+        "2": [
+          {
+            "topic": "cleanliness",
+            "dimension": "cleanliness",
+            "n_mentioned": 481,
+            "n_not_mentioned": 395,
+            "mean_dim_mentioned": 4.701,
+            "mean_dim_not_mentioned": 4.552,
+            "delta": 0.149
+          },
+          {
+            "topic": "location",
+            "dimension": "location",
+            "n_mentioned": 638,
+            "n_not_mentioned": 238,
+            "mean_dim_mentioned": 4.505,
+            "mean_dim_not_mentioned": 4.374,
+            "delta": 0.131
+          },
+          {
+            "topic": "noise",
+            "dimension": "sleep_quality",
+            "n_mentioned": 166,
+            "n_not_mentioned": 710,
+            "mean_dim_mentioned": 3.554,
+            "mean_dim_not_mentioned": 4.306,
+            "delta": -0.752
+          },
+          {
+            "topic": "value",
+            "dimension": "value",
+            "n_mentioned": 745,
+            "n_not_mentioned": 131,
+            "mean_dim_mentioned": 4.369,
+            "mean_dim_not_mentioned": 3.71,
+            "delta": 0.659
+          }
+        ]
+      }
+    }
+  },
+  "caveats": [
+    "S4: recensioni solo 2012, prenotazioni 2015-2017: zero mesi in comune, nessuna analisi congiunta; comparazione solo a livello di proprieta'.",
+    "Corpus solo inglese, N=1638, due proprieta': statistiche descrittive, non inferenza su una popolazione.",
+    "Etichette deboli: i voti reali 1-5 non sono stati generati dal modello; correlazione non e' accuratezza.",
+    "Output query-time (S8): mai scritti nel DB; il run legge reviews in sola lettura.",
+    "Topics: troncati a 256 token per runtime (il modello arriverebbe a 1024); soglie calibrate su probe di 20 recensioni, F1 ottimistico."
+  ]
+}

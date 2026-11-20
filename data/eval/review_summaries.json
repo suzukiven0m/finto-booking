@@ -1,0 +1,605 @@
+{
+  "k": 3,
+  "summaries": [
+    {
+      "property_id": 1,
+      "month": "2012-01",
+      "n_reviews": 36,
+      "sentences": [
+        {
+          "text": "This hotel is perfectly located and has brilliant staff.",
+          "review_id": 29,
+          "post_date": "2012-01-29",
+          "score": 0.970884
+        },
+        {
+          "text": "I stayed there for 4 days and they did everything possible to make our stay plesant and well.",
+          "review_id": 29,
+          "post_date": "2012-01-29",
+          "score": 0.960884
+        },
+        {
+          "text": "The Waldorf in NYC is such a beautiful old hotel.",
+          "review_id": 33,
+          "post_date": "2012-01-30",
+          "score": 0.955036
+        }
+      ]
+    },
+    {
+      "property_id": 1,
+      "month": "2012-02",
+      "n_reviews": 56,
+      "sentences": [
+        {
+          "text": "My boyfriend and I just stayed at the Waldorf this past weekend, which was our second time staying at the hotel.",
+          "review_id": 92,
+          "post_date": "2012-02-29",
+          "score": 0.977855
+        },
+        {
+          "text": "Wife and I have stayed there many times when they have a discount period.",
+          "review_id": 77,
+          "post_date": "2012-02-20",
+          "score": 0.973161
+        },
+        {
+          "text": "We have just returned from 4 nights in a superior room on the 25th floor, it was wonderful!",
+          "review_id": 78,
+          "post_date": "2012-02-20",
+          "score": 0.968076
+        }
+      ]
+    },
+    {
+      "property_id": 1,
+      "month": "2012-03",
+      "n_reviews": 45,
+      "sentences": [
+        {
+          "text": "I went to the Waldorf on MLK weekend.",
+          "review_id": 135,
+          "post_date": "2012-03-29",
+          "score": 0.973574
+        },
+        {
+          "text": "This was our second stay here and it was even more unforgettable.",
+          "review_id": 109,
+          "post_date": "2012-03-13",
+          "score": 0.970028
+        },
+        {
+          "text": "My granddaughter and I stayed here to enjoy a week in Manhattan.",
+          "review_id": 108,
+          "post_date": "2012-03-10",
+          "score": 0.969811
+        }
+      ]
+    },
+    {
+      "property_id": 1,
+      "month": "2012-04",
+      "n_reviews": 79,
+      "sentences": [
+        {
+          "text": "This hotel is stunning.",
+          "review_id": 144,
+          "post_date": "2012-04-02",
+          "score": 0.97925
+        },
+        {
+          "text": "I have stayed at the Waldorf a couple of times now, very consistent with their service and a good location for your New York experience.",
+          "review_id": 213,
+          "post_date": "2012-04-30",
+          "score": 0.978922
+        },
+        {
+          "text": "My daughters and I stayed 5 nights.",
+          "review_id": 167,
+          "post_date": "2012-04-12",
+          "score": 0.971326
+        }
+      ]
+    },
+    {
+      "property_id": 1,
+      "month": "2012-05",
+      "n_reviews": 59,
+      "sentences": [
+        {
+          "text": "This place is absolutely beautiful inside and out.",
+          "review_id": 235,
+          "post_date": "2012-05-12",
+          "score": 0.979865
+        },
+        {
+          "text": "Great service, Fabulous historic hotel, nice display in the lobby.",
+          "review_id": 269,
+          "post_date": "2012-05-28",
+          "score": 0.975924
+        },
+        {
+          "text": "We spent four nights in the Waldof Astoria.",
+          "review_id": 253,
+          "post_date": "2012-05-21",
+          "score": 0.970856
+        }
+      ]
+    },
+    {
+      "property_id": 1,
+      "month": "2012-06",
+      "n_reviews": 64,
+      "sentences": [
+        {
+          "text": "Fancy feeling like a queen for a week?",
+          "review_id": 300,
+          "post_date": "2012-06-11",
+          "score": 0.986195
+        },
+        {
+          "text": "The Waldorf Towers were worth every dollar.",
+          "review_id": 277,
+          "post_date": "2012-06-01",
+          "score": 0.981421
+        },
+        {
+          "text": "My wonderful partner took me to this fabulous hotel for my birthday.",
+          "review_id": 300,
+          "post_date": "2012-06-11",
+          "score": 0.976195
+        }
+      ]
+    },
+    {
+      "property_id": 1,
+      "month": "2012-07",
+      "n_reviews": 74,
+      "sentences": [
+        {
+          "text": "I stayed at the Waldorf for a few nights.",
+          "review_id": 398,
+          "post_date": "2012-07-23",
+          "score": 0.979888
+        },
+        {
+          "text": "Great time, kids and everyone one had a great time.",
+          "review_id": 342,
+          "post_date": "2012-07-02",
+          "score": 0.976513
+        },
+        {
+          "text": "There cannot be a better place to stay than The Waldorf-Astoria when in New York City!",
+          "review_id": 380,
+          "post_date": "2012-07-16",
+          "score": 0.975297
+        }
+      ]
+    },
+    {
+      "property_id": 1,
+      "month": "2012-08",
+      "n_reviews": 73,
+      "sentences": [
+        {
+          "text": "Our stay with our family here was amazing.",
+          "review_id": 460,
+          "post_date": "2012-08-21",
+          "score": 0.976138
+        },
+        {
+          "text": "Loved the hotel and the staff were wonderful.",
+          "review_id": 457,
+          "post_date": "2012-08-20",
+          "score": 0.967024
+        },
+        {
+          "text": "From Mary at the Diamond check in area all the way down it is run top notch.",
+          "review_id": 460,
+          "post_date": "2012-08-21",
+          "score": 0.966138
+        }
+      ]
+    },
+    {
+      "property_id": 1,
+      "month": "2012-09",
+      "n_reviews": 88,
+      "sentences": [
+        {
+          "text": "I stayed at the Waldorf Astoria this last week and was extremely pleased with the whole experience.",
+          "review_id": 558,
+          "post_date": "2012-09-24",
+          "score": 0.979626
+        },
+        {
+          "text": "We booked one bedroom suite (num A10) that could easy accommodates 4 people, the room is huge.",
+          "review_id": 501,
+          "post_date": "2012-09-06",
+          "score": 0.970101
+        },
+        {
+          "text": "The Hotel is a true piece of history, wonderful to explore and enjoy.",
+          "review_id": 558,
+          "post_date": "2012-09-24",
+          "score": 0.969626
+        }
+      ]
+    },
+    {
+      "property_id": 1,
+      "month": "2012-10",
+      "n_reviews": 56,
+      "sentences": [
+        {
+          "text": "Great place, great location, good value.",
+          "review_id": 578,
+          "post_date": "2012-10-05",
+          "score": 0.978354
+        },
+        {
+          "text": "Close to Grand Central Station and top of the Rock.",
+          "review_id": 578,
+          "post_date": "2012-10-05",
+          "score": 0.968354
+        },
+        {
+          "text": "First stay at the Waldorf, very pleased.",
+          "review_id": 579,
+          "post_date": "2012-10-05",
+          "score": 0.966426
+        }
+      ]
+    },
+    {
+      "property_id": 1,
+      "month": "2012-11",
+      "n_reviews": 81,
+      "sentences": [
+        {
+          "text": "After getting a super deal on Priceline, my girlfriend and I thoroughly enjoyed our stay at the Waldorf and were in awe of the history and architecture.",
+          "review_id": 646,
+          "post_date": "2012-11-05",
+          "score": 0.980961
+        },
+        {
+          "text": "The staff was superb and the beds were the most comfortable I have ever slept on.",
+          "review_id": 646,
+          "post_date": "2012-11-05",
+          "score": 0.970961
+        },
+        {
+          "text": "My fiancee and I recently stayed at the Waldorf for the third time and this was absolutely the best!",
+          "review_id": 705,
+          "post_date": "2012-11-28",
+          "score": 0.966246
+        }
+      ]
+    },
+    {
+      "property_id": 1,
+      "month": "2012-12",
+      "n_reviews": 51,
+      "sentences": [
+        {
+          "text": "Got a great offer to that hotel and didn´t think to long about taking that chance!",
+          "review_id": 755,
+          "post_date": "2012-12-16",
+          "score": 0.975525
+        },
+        {
+          "text": "We stayed three days over a weekend as a family in a Junior Suite on a visit from England and enjoyed every minute of it.",
+          "review_id": 752,
+          "post_date": "2012-12-15",
+          "score": 0.974692
+        },
+        {
+          "text": "Everything was excellent Eat at the restaurant food/service great.",
+          "review_id": 728,
+          "post_date": "2012-12-06",
+          "score": 0.972654
+        }
+      ]
+    },
+    {
+      "property_id": 2,
+      "month": "2012-01",
+      "n_reviews": 40,
+      "sentences": [
+        {
+          "text": "The Yotel is a great place to stay, it's new, hip, chic, modern, and very comfortable and well thought out.",
+          "review_id": 784,
+          "post_date": "2012-01-18",
+          "score": 0.984857
+        },
+        {
+          "text": "This hotel was conveniently located by CVS and Times Square.",
+          "review_id": 801,
+          "post_date": "2012-01-30",
+          "score": 0.983873
+        },
+        {
+          "text": "This hotel was not only impeccably clean, but the staff was so helpful and courteous!",
+          "review_id": 778,
+          "post_date": "2012-01-15",
+          "score": 0.976239
+        }
+      ]
+    },
+    {
+      "property_id": 2,
+      "month": "2012-02",
+      "n_reviews": 71,
+      "sentences": [
+        {
+          "text": "If you like your iPhone go there.",
+          "review_id": 816,
+          "post_date": "2012-02-06",
+          "score": 0.971364
+        },
+        {
+          "text": "My Hubby was taking pictures of this hotel as soon as we stepped in the room.",
+          "review_id": 859,
+          "post_date": "2012-02-22",
+          "score": 0.970137
+        },
+        {
+          "text": "It looks like an iPhone and it is as intuitive.",
+          "review_id": 816,
+          "post_date": "2012-02-06",
+          "score": 0.961364
+        }
+      ]
+    },
+    {
+      "property_id": 2,
+      "month": "2012-03",
+      "n_reviews": 72,
+      "sentences": [
+        {
+          "text": "I was traveling with a friend and we loved the hotel!",
+          "review_id": 876,
+          "post_date": "2012-03-02",
+          "score": 0.980139
+        },
+        {
+          "text": "Great hotel with just enough space for everything to be comfortable.",
+          "review_id": 875,
+          "post_date": "2012-03-01",
+          "score": 0.978629
+        },
+        {
+          "text": "We came here for brunch and it was amazing.",
+          "review_id": 898,
+          "post_date": "2012-03-11",
+          "score": 0.977961
+        }
+      ]
+    },
+    {
+      "property_id": 2,
+      "month": "2012-04",
+      "n_reviews": 72,
+      "sentences": [
+        {
+          "text": "It´s a modern, very clean and well situated hotel in New York.",
+          "review_id": 979,
+          "post_date": "2012-04-14",
+          "score": 0.982625
+        },
+        {
+          "text": "We loved our stay here.",
+          "review_id": 951,
+          "post_date": "2012-04-03",
+          "score": 0.981556
+        },
+        {
+          "text": "It was great fun staying at the YOTEL!",
+          "review_id": 972,
+          "post_date": "2012-04-11",
+          "score": 0.981175
+        }
+      ]
+    },
+    {
+      "property_id": 2,
+      "month": "2012-05",
+      "n_reviews": 73,
+      "sentences": [
+        {
+          "text": "Bright and clean\nFriendly and helpful staff\nInnovative (Yobot, electric bed)\nGood position, not far from Times Square and the subway\nI'd stay there again",
+          "review_id": 1077,
+          "post_date": "2012-05-26",
+          "score": 0.974998
+        },
+        {
+          "text": "A small room with one of the most comfortable beds I have slept in.",
+          "review_id": 1074,
+          "post_date": "2012-05-25",
+          "score": 0.972833
+        },
+        {
+          "text": "Like the concept - small clean rooms - imagine being inside an ipod (just bigger).",
+          "review_id": 1075,
+          "post_date": "2012-05-25",
+          "score": 0.971376
+        }
+      ]
+    },
+    {
+      "property_id": 2,
+      "month": "2012-06",
+      "n_reviews": 62,
+      "sentences": [
+        {
+          "text": "This place was fun.",
+          "review_id": 1139,
+          "post_date": "2012-06-23",
+          "score": 0.980071
+        },
+        {
+          "text": "Shiny and new...boutique, chic, modern, clean, and secure.",
+          "review_id": 1139,
+          "post_date": "2012-06-23",
+          "score": 0.970071
+        },
+        {
+          "text": "This hotel is new, clean with a modern twist.",
+          "review_id": 1140,
+          "post_date": "2012-06-23",
+          "score": 0.96966
+        }
+      ]
+    },
+    {
+      "property_id": 2,
+      "month": "2012-07",
+      "n_reviews": 96,
+      "sentences": [
+        {
+          "text": "Went to NYC with two teenagers to see Broadway shows.",
+          "review_id": 1184,
+          "post_date": "2012-07-09",
+          "score": 0.983966
+        },
+        {
+          "text": "We stayed at Yotel for the first time recently and had a great experience.",
+          "review_id": 1169,
+          "post_date": "2012-07-05",
+          "score": 0.981281
+        },
+        {
+          "text": "My 16 year old daughter and I stayed at Yotel during our stay in NYC.",
+          "review_id": 1198,
+          "post_date": "2012-07-12",
+          "score": 0.979036
+        }
+      ]
+    },
+    {
+      "property_id": 2,
+      "month": "2012-08",
+      "n_reviews": 97,
+      "sentences": [
+        {
+          "text": "An awesome visit of New York City with my two wonderful daughters.",
+          "review_id": 1302,
+          "post_date": "2012-08-18",
+          "score": 0.981474
+        },
+        {
+          "text": "We really enjoyed our two night stay.",
+          "review_id": 1295,
+          "post_date": "2012-08-15",
+          "score": 0.972755
+        },
+        {
+          "text": "Pretty well located nearby Time Square in Yotel, we had a joyfull 48-hours experience visiting, sightseeing and being at Mary Poppin's spectacle.",
+          "review_id": 1302,
+          "post_date": "2012-08-18",
+          "score": 0.971474
+        }
+      ]
+    },
+    {
+      "property_id": 2,
+      "month": "2012-09",
+      "n_reviews": 76,
+      "sentences": [
+        {
+          "text": "Beautiful modern hotel near to Times Square.",
+          "review_id": 1395,
+          "post_date": "2012-09-23",
+          "score": 0.980893
+        },
+        {
+          "text": "Very modern and great and convenient location.",
+          "review_id": 1403,
+          "post_date": "2012-09-24",
+          "score": 0.979758
+        },
+        {
+          "text": "Awesome and quiet room, awesome view!",
+          "review_id": 1380,
+          "post_date": "2012-09-17",
+          "score": 0.977783
+        }
+      ]
+    },
+    {
+      "property_id": 2,
+      "month": "2012-10",
+      "n_reviews": 68,
+      "sentences": [
+        {
+          "text": "I've stayed at the Yotel over 20 times this past year.",
+          "review_id": 1445,
+          "post_date": "2012-10-12",
+          "score": 0.981648
+        },
+        {
+          "text": "Great Service, Great Location, Great Price\nClean and free 24hr coffee \nThe breakfast muffins are awesome!",
+          "review_id": 1485,
+          "post_date": "2012-10-29",
+          "score": 0.971654
+        },
+        {
+          "text": "All business travel and its been great each time.",
+          "review_id": 1445,
+          "post_date": "2012-10-12",
+          "score": 0.971648
+        }
+      ]
+    },
+    {
+      "property_id": 2,
+      "month": "2012-11",
+      "n_reviews": 99,
+      "sentences": [
+        {
+          "text": "We visited Yotel to watch the Macy's Thanksgiving Day Parade.",
+          "review_id": 1569,
+          "post_date": "2012-11-25",
+          "score": 0.980891
+        },
+        {
+          "text": "What an awesome hotel!",
+          "review_id": 1501,
+          "post_date": "2012-11-05",
+          "score": 0.9765
+        },
+        {
+          "text": "I enjoyed a two night stay at the Yotel.",
+          "review_id": 1550,
+          "post_date": "2012-11-19",
+          "score": 0.974915
+        }
+      ]
+    },
+    {
+      "property_id": 2,
+      "month": "2012-12",
+      "n_reviews": 50,
+      "sentences": [
+        {
+          "text": "Brilliant value for money, with brilliant views from the 21st floor!",
+          "review_id": 1638,
+          "post_date": "2012-12-19",
+          "score": 0.971787
+        },
+        {
+          "text": "Went to NYC for a holiday weekend.",
+          "review_id": 1601,
+          "post_date": "2012-12-04",
+          "score": 0.971587
+        },
+        {
+          "text": "The location is very central.",
+          "review_id": 1625,
+          "post_date": "2012-12-14",
+          "score": 0.965199
+        }
+      ]
+    }
+  ]
+}
