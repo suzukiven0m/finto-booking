@@ -118,6 +118,23 @@ jobs:
           PYTHONPATH=backend pytest -q
           backend/tests/test_api.py backend/tests/test_contract.py
 
+      - name: E2E smoke on sample (real HTTP)
+        # D17: la chain UI gira contro uvicorn vero sul DB seedato qui sopra,
+        # non contro il mock. Lo script riconosce da solo il baseline campione
+        # (3564 valid); DB/API irraggiungibili => exit 1, mai skip.
+        working-directory: backend
+        run: |
+          uvicorn app.main:app --port 8000 &
+          API_PID=$!
+          trap 'kill $API_PID 2>/dev/null' EXIT
+          for _ in $(seq 1 30); do
+            if curl -sf localhost:8000/api/properties >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          python tests/e2e_smoke.py
+
   frontend:
     runs-on: ubuntu-latest
 
@@ -142,4 +159,7 @@ jobs:
 
       - name: Build
         working-directory: frontend
+        env:
+          # D17: build contro le API reali (e' anche il default del client)
+          VITE_API_BASE_URL: http://localhost:8000
         run: npm run build

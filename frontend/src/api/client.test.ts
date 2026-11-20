@@ -58,12 +58,12 @@ describe("api client", () => {
     expect(summary).toEqual(summaryBody);
     expect(fetchMock).toHaveBeenCalledTimes(2);
     const [loginUrl, loginInit] = fetchMock.mock.calls[0];
-    expect(loginUrl).toBe("http://localhost:4010/api/auth/login");
+    expect(loginUrl).toBe("http://localhost:8000/api/auth/login");
     expect(loginInit.method).toBe("POST");
     const [summaryUrl, summaryInit] = fetchMock.mock.calls[1];
     // null property_id (both properties) is omitted from the query string
     expect(summaryUrl).toBe(
-      "http://localhost:4010/api/kpis/summary?date_from=2015-07-01&date_to=2017-08-31",
+      "http://localhost:8000/api/kpis/summary?date_from=2015-07-01&date_to=2017-08-31",
     );
     expect(summaryInit.headers.Authorization).toBe("Bearer demo-token");
   });
@@ -95,7 +95,7 @@ describe("api client", () => {
     expect(result.meta.total).toBe(793);
     expect(result.data[0].adr).toBeNull();
     expect(fetchMock.mock.calls[1][0]).toBe(
-      "http://localhost:4010/api/kpis/daily?property_id=1&page_size=200",
+      "http://localhost:8000/api/kpis/daily?property_id=1&page_size=200",
     );
   });
 
@@ -206,7 +206,7 @@ describe("D13 / D19 / D20 api client functions", () => {
 
     expect(result).toEqual(summaryBody);
     expect(fetchMock.mock.calls[1][0]).toBe(
-      "http://localhost:4010/api/reviews/summary?property_id=1",
+      "http://localhost:8000/api/reviews/summary?property_id=1",
     );
   });
 
@@ -245,7 +245,7 @@ describe("D13 / D19 / D20 api client functions", () => {
     expect(result.meta.total).toBe(762);
     expect(result.data[0].post_date).toBe("2012-05-14");
     expect(fetchMock.mock.calls[1][0]).toBe(
-      "http://localhost:4010/api/reviews?property_id=1&page=1&page_size=200",
+      "http://localhost:8000/api/reviews?property_id=1&page=1&page_size=200",
     );
   });
 
@@ -351,7 +351,7 @@ describe("D13 / D19 / D20 api client functions", () => {
 
     expect(result).toEqual(guestRequest);
     const [url, init] = fetchMock.mock.calls[1];
-    expect(url).toBe("http://localhost:4010/api/guest-requests/1");
+    expect(url).toBe("http://localhost:8000/api/guest-requests/1");
     expect(init.method).toBe("PATCH");
     expect(JSON.parse(init.body as string)).toEqual({
       draft_reply: "Dear guest, yes we have rooms available.",
