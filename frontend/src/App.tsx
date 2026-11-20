@@ -12,6 +12,9 @@ import {
 } from "recharts";
 import { ApiError, getKpiDaily, getKpiSummary, getProperties } from "./api/client";
 import type { KpiDailyPoint, KpiSummary, Property } from "./api/types";
+import Reputazione from "./pages/Reputazione";
+import Ricerca from "./pages/Ricerca";
+import Inbox from "./pages/Inbox";
 import { ROLE_LABELS } from "./session";
 import type { Session } from "./session";
 
@@ -28,6 +31,15 @@ const pct = (value: number) =>
 const DEFAULT_FROM = "2015-07-01";
 const DEFAULT_TO = "2017-08-31";
 
+type Tab = "dashboard" | "reputazione" | "ricerca" | "inbox";
+
+const TABS: Array<{ id: Tab; label: string }> = [
+  { id: "dashboard", label: "Dashboard" },
+  { id: "reputazione", label: "Reputazione" },
+  { id: "ricerca", label: "Ricerca" },
+  { id: "inbox", label: "Inbox" },
+];
+
 function KpiCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
@@ -39,6 +51,9 @@ function KpiCard({ label, value, hint }: { label: string; value: string; hint?: 
 }
 
 export default function App({ session, onLogout }: { session: Session; onLogout: () => void }) {
+  const [tab, setTab] = useState<Tab>("dashboard");
+
+  // Dashboard-specific state (unchanged from WP3/WP7)
   const [properties, setProperties] = useState<Property[]>([]);
   const [propertyId, setPropertyId] = useState("");
   const [dateFrom, setDateFrom] = useState(DEFAULT_FROM);
@@ -99,43 +114,48 @@ export default function App({ session, onLogout }: { session: Session; onLogout:
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-end justify-between gap-4 px-4 py-5">
           <div>
-            <h1 className="text-xl font-semibold">Buby Travel — Dashboard</h1>
+            <h1 className="text-xl font-semibold">Buby Travel — {TABS.find((t) => t.id === tab)?.label}</h1>
             <p className="text-sm text-slate-500">SAL 1 demo · KPIs from the pinned contract v1</p>
           </div>
           <div className="flex flex-wrap items-end gap-3">
-            <label className="flex flex-col gap-1 text-xs font-medium text-slate-500">
-              Property
-              <select
-                className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
-                value={propertyId}
-                onChange={(event) => setPropertyId(event.target.value)}
-              >
-                <option value="">Both</option>
-                {selectorOptions.map((property) => (
-                  <option key={property.id} value={property.id}>
-                    {property.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="flex flex-col gap-1 text-xs font-medium text-slate-500">
-              From
-              <input
-                type="date"
-                className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
-                value={dateFrom}
-                onChange={(event) => setDateFrom(event.target.value)}
-              />
-            </label>
-            <label className="flex flex-col gap-1 text-xs font-medium text-slate-500">
-              To
-              <input
-                type="date"
-                className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
-                value={dateTo}
-                onChange={(event) => setDateTo(event.target.value)}
-              />
-            </label>
+            {/* Dashboard-specific controls: property selector + date range */}
+            {tab === "dashboard" && (
+              <>
+                <label className="flex flex-col gap-1 text-xs font-medium text-slate-500">
+                  Property
+                  <select
+                    className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
+                    value={propertyId}
+                    onChange={(event) => setPropertyId(event.target.value)}
+                  >
+                    <option value="">Both</option>
+                    {selectorOptions.map((property) => (
+                      <option key={property.id} value={property.id}>
+                        {property.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1 text-xs font-medium text-slate-500">
+                  From
+                  <input
+                    type="date"
+                    className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                    value={dateFrom}
+                    onChange={(event) => setDateFrom(event.target.value)}
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-xs font-medium text-slate-500">
+                  To
+                  <input
+                    type="date"
+                    className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                    value={dateTo}
+                    onChange={(event) => setDateTo(event.target.value)}
+                  />
+                </label>
+              </>
+            )}
             {/* chi e' entrato + logout */}
             <div className="flex items-center gap-3 text-sm">
               <span className="text-slate-500">
@@ -151,97 +171,130 @@ export default function App({ session, onLogout }: { session: Session; onLogout:
             </div>
           </div>
         </div>
+
+        {/* Tab bar */}
+        <div className="mx-auto flex max-w-6xl gap-1 px-4">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              className={`border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
+                tab === t.id
+                  ? "border-sky-600 text-sky-600"
+                  : "border-transparent text-slate-500 hover:text-slate-700"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-6">
-        {error && (
-          <div className="mb-6 flex items-center justify-between gap-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            <span>{error}</span>
-            <button
-              type="button"
-              className="rounded-md border border-red-300 px-3 py-1 font-medium hover:bg-red-100"
-              onClick={() => setReload((n) => n + 1)}
-            >
-              Retry
-            </button>
-          </div>
-        )}
-
-        {loading && (
-          <p className="py-16 text-center text-sm text-slate-500">Loading KPIs…</p>
-        )}
-
-        {!loading && summary && (
+        {/* ── Dashboard ── */}
+        {tab === "dashboard" && (
           <>
-            <section className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-              <KpiCard label="Revenue" value={eur.format(summary.revenue)} />
-              <KpiCard label="Room nights" value={int.format(summary.room_nights)} />
-              <KpiCard label="ADR" value={eur.format(summary.adr)} />
-              <KpiCard label="Cancellation rate" value={pct(summary.cancellation_rate)} />
-              <KpiCard
-                label="Occupancy (avg)"
-                value={pct(summary.occupancy_avg)}
-                hint="assumed capacity"
-              />
-              <KpiCard label="RevPAR" value={eur.format(summary.revpar)} hint="assumed capacity" />
-            </section>
-
-            <section className="mt-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-              <h2 className="mb-4 text-sm font-semibold text-slate-700">
-                Daily revenue & occupancy
-              </h2>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart data={daily} margin={{ top: 4, right: 8, bottom: 4, left: 8 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                    <YAxis
-                      yAxisId="revenue"
-                      tick={{ fontSize: 12 }}
-                      tickFormatter={(value: number) => `€${int.format(value)}`}
-                    />
-                    <YAxis
-                      yAxisId="occupancy"
-                      orientation="right"
-                      domain={[0, 1]}
-                      tick={{ fontSize: 12 }}
-                      tickFormatter={(value: number) => pct(value)}
-                    />
-                    <Tooltip
-                      formatter={(value: number | string, name: string) =>
-                        name === "Revenue" ? eur.format(Number(value)) : pct(Number(value))
-                      }
-                    />
-                    <Legend />
-                    <Area
-                      yAxisId="revenue"
-                      dataKey="revenue"
-                      name="Revenue"
-                      stroke="#0ea5e9"
-                      fill="#e0f2fe"
-                      connectNulls
-                    />
-                    <Line
-                      yAxisId="occupancy"
-                      dataKey="occupancy"
-                      name="Occupancy"
-                      stroke="#f59e0b"
-                      dot={false}
-                      connectNulls
-                    />
-                  </ComposedChart>
-                </ResponsiveContainer>
+            {error && (
+              <div className="mb-6 flex items-center justify-between gap-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <span>{error}</span>
+                <button
+                  type="button"
+                  className="rounded-md border border-red-300 px-3 py-1 font-medium hover:bg-red-100"
+                  onClick={() => setReload((n) => n + 1)}
+                >
+                  Retry
+                </button>
               </div>
-            </section>
+            )}
 
-            <p className="mt-3 text-xs text-slate-500">
-              Il riepilogo conta gli arrivi nel periodo; il grafico giornaliero conta i giorni di
-              soggiorno: ai bordi dell'intervallo i totali differiscono per progetto.
-            </p>
+            {loading && (
+              <p className="py-16 text-center text-sm text-slate-500">Loading KPIs…</p>
+            )}
+
+            {!loading && summary && (
+              <>
+                <section className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+                  <KpiCard label="Revenue" value={eur.format(summary.revenue)} />
+                  <KpiCard label="Room nights" value={int.format(summary.room_nights)} />
+                  <KpiCard label="ADR" value={eur.format(summary.adr)} />
+                  <KpiCard label="Cancellation rate" value={pct(summary.cancellation_rate)} />
+                  <KpiCard
+                    label="Occupancy (avg)"
+                    value={pct(summary.occupancy_avg)}
+                    hint="assumed capacity"
+                  />
+                  <KpiCard label="RevPAR" value={eur.format(summary.revpar)} hint="assumed capacity" />
+                </section>
+
+                <section className="mt-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+                  <h2 className="mb-4 text-sm font-semibold text-slate-700">
+                    Daily revenue & occupancy
+                  </h2>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChart data={daily} margin={{ top: 4, right: 8, bottom: 4, left: 8 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                        <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                        <YAxis
+                          yAxisId="revenue"
+                          tick={{ fontSize: 12 }}
+                          tickFormatter={(value: number) => `€${int.format(value)}`}
+                        />
+                        <YAxis
+                          yAxisId="occupancy"
+                          orientation="right"
+                          domain={[0, 1]}
+                          tick={{ fontSize: 12 }}
+                          tickFormatter={(value: number) => pct(value)}
+                        />
+                        <Tooltip
+                          formatter={(value: number | string, name: string) =>
+                            name === "Revenue" ? eur.format(Number(value)) : pct(Number(value))
+                          }
+                        />
+                        <Legend />
+                        <Area
+                          yAxisId="revenue"
+                          dataKey="revenue"
+                          name="Revenue"
+                          stroke="#0ea5e9"
+                          fill="#e0f2fe"
+                          connectNulls
+                        />
+                        <Line
+                          yAxisId="occupancy"
+                          dataKey="occupancy"
+                          name="Occupancy"
+                          stroke="#f59e0b"
+                          dot={false}
+                          connectNulls
+                        />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </div>
+                </section>
+
+                <p className="mt-3 text-xs text-slate-500">
+                  Il riepilogo conta gli arrivi nel periodo; il grafico giornaliero conta i giorni di
+                  soggiorno: ai bordi dell'intervallo i totali differiscono per progetto.
+                </p>
+              </>
+            )}
           </>
         )}
+
+        {/* ── Reputazione ── */}
+        {tab === "reputazione" && <Reputazione />}
+
+        {/* ── Ricerca ── */}
+        {tab === "ricerca" && <Ricerca />}
+
+        {/* ── Inbox ── */}
+        {tab === "inbox" && <Inbox session={session} />}
       </main>
 
+      {/* Disclosures footer — visible on every page (binding per openapi.yaml + docs/api-contract.md) */}
       <footer className="mx-auto max-w-6xl px-4 pb-8 text-xs leading-relaxed text-slate-500">
         <p>
           Occupancy & RevPAR use <strong>assumed capacity</strong> (Buby Lago 190 rooms, Buby
