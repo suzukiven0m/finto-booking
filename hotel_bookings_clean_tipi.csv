@@ -1,0 +1,44 @@
+posizione,colonna,tipo_postgresql,ammette_null,origine
+1,booking_id,char(40),no,nuova (derivata)
+2,hotel,varchar(20),no,originale
+3,is_canceled,smallint,no,originale
+4,lead_time,integer,no,originale
+5,arrival_date_year,smallint,no,originale
+6,arrival_date_month,varchar(9),no,originale
+7,arrival_date_week_number,smallint,no,originale
+8,arrival_date_day_of_month,smallint,no,originale
+9,arrival_date,date,no,nuova (derivata)
+10,stays_in_weekend_nights,smallint,no,originale
+11,stays_in_week_nights,smallint,no,originale
+12,total_nights,smallint,no,nuova (derivata)
+13,adults,smallint,no,originale
+14,children,smallint,no,originale
+15,babies,smallint,no,originale
+16,total_guests,smallint,no,nuova (derivata)
+17,meal,varchar(2),no,originale
+18,country,char(3),no,originale
+19,market_segment,varchar(20),no,originale
+20,distribution_channel,varchar(20),no,originale
+21,is_repeated_guest,smallint,no,originale
+22,previous_cancellations,smallint,no,originale
+23,previous_bookings_not_canceled,smallint,no,originale
+24,reserved_room_type,char(1),no,originale
+25,assigned_room_type,char(1),no,originale
+26,booking_changes,smallint,no,originale
+27,deposit_type,varchar(20),no,originale
+28,agent,integer,si,originale
+29,company,integer,si,originale
+30,days_in_waiting_list,integer,no,originale
+31,customer_type,varchar(20),no,originale
+32,adr,"numeric(10,2)",no,originale
+33,total_revenue,"numeric(12,2)",no,nuova (derivata)
+34,required_car_parking_spaces,smallint,no,originale
+35,total_of_special_requests,smallint,no,originale
+36,reservation_status,varchar(10),no,originale
+37,reservation_status_date,date,no,originale
+38,guest_email,text,si,originale
+39,review_text,text,si,originale
+40,is_outlier_lead_time,boolean,no,nuova (derivata)
+41,is_outlier_adr,boolean,no,nuova (derivata)
+42,is_outlier_total_nights,boolean,no,nuova (derivata)
+43,dq_flags,text,si,nuova (derivata)
