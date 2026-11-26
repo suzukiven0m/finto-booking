@@ -1,309 +1,221 @@
 import { useEffect, useState } from "react";
+import { getProperties } from "./api/client";
+import type { Property } from "./api/types";
+import { CommandPalette } from "./components/CommandPalette";
+import type { AppTab } from "./components/CommandPalette";
+import { DisclosuresModal } from "./components/DisclosuresModal";
 import {
-  CartesianGrid,
-  ComposedChart,
-  Area,
-  Legend,
-  Line,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import { ApiError, getKpiDaily, getKpiSummary, getProperties } from "./api/client";
-import type { KpiDailyPoint, KpiSummary, Property } from "./api/types";
+  IconCommand,
+  IconDashboard,
+  IconInbox,
+  IconInfo,
+  IconLogOut,
+  IconSearch,
+  IconSparkles,
+} from "./components/Icons";
+import Dashboard from "./pages/Dashboard";
+import Inbox from "./pages/Inbox";
 import Reputazione from "./pages/Reputazione";
 import Ricerca from "./pages/Ricerca";
-import Inbox from "./pages/Inbox";
 import { ROLE_LABELS } from "./session";
 import type { Session } from "./session";
 
-const eur = new Intl.NumberFormat("it-IT", {
-  style: "currency",
-  currency: "EUR",
-  maximumFractionDigits: 2,
-});
-const int = new Intl.NumberFormat("it-IT");
-const pct = (value: number) =>
-  `${(value * 100).toLocaleString("it-IT", { maximumFractionDigits: 2 })}%`;
-
-// Full dataset range (docs/data-dictionary.md §3 baseline).
-const DEFAULT_FROM = "2015-07-01";
-const DEFAULT_TO = "2017-08-31";
-
-type Tab = "dashboard" | "reputazione" | "ricerca" | "inbox";
-
-const TABS: Array<{ id: Tab; label: string }> = [
-  { id: "dashboard", label: "Dashboard" },
-  { id: "reputazione", label: "Reputazione" },
-  { id: "ricerca", label: "Ricerca" },
-  { id: "inbox", label: "Inbox" },
+const TABS: Array<{ id: AppTab; label: string; subtitle: string }> = [
+  { id: "dashboard", label: "Command Center", subtitle: "KPI, stagionalità, canali & simulatore" },
+  { id: "reputazione", label: "Reputazione AI", subtitle: "Radar 5 dimensioni, NLP 2012 & explorer" },
+  { id: "ricerca", label: "Booking Intelligence", subtitle: "Ricerca avanzata, lead-time & CSV" },
+  { id: "inbox", label: "Smart Inbox HITL", subtitle: "Triage richieste & bozze con approvazione" },
 ];
 
-function KpiCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
-  return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
-      <p className="mt-1 text-2xl font-semibold text-slate-900">{value}</p>
-      {hint && <p className="mt-1 text-xs text-slate-400">{hint}</p>}
-    </div>
-  );
-}
-
 export default function App({ session, onLogout }: { session: Session; onLogout: () => void }) {
-  const [tab, setTab] = useState<Tab>("dashboard");
-
-  // Dashboard-specific state (unchanged from WP3/WP7)
+  const [tab, setTab] = useState<AppTab>("dashboard");
   const [properties, setProperties] = useState<Property[]>([]);
   const [propertyId, setPropertyId] = useState("");
-  const [dateFrom, setDateFrom] = useState(DEFAULT_FROM);
-  const [dateTo, setDateTo] = useState(DEFAULT_TO);
-  const [summary, setSummary] = useState<KpiSummary | null>(null);
-  const [daily, setDaily] = useState<KpiDailyPoint[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [reload, setReload] = useState(0);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [disclosuresOpen, setDisclosuresOpen] = useState(false);
 
   useEffect(() => {
-    getProperties().then(setProperties).catch(() => {
-      // Selector falls back to the two known properties; KPI error state covers outages.
-    });
+    getProperties()
+      .then(setProperties)
+      .catch(() => {
+        // Fallback properties handled in child components
+      });
   }, []);
 
+  // Global Ctrl+K / Cmd+K shortcut for Command Palette
   useEffect(() => {
-    const controller = new AbortController();
-    const params = {
-      property_id: propertyId === "" ? null : Number(propertyId),
-      date_from: dateFrom,
-      date_to: dateTo,
-    };
-    setLoading(true);
-    setError(null);
-    Promise.all([
-      getKpiSummary(params),
-      getKpiDaily({ ...params, page_size: 200 }),
-    ])
-      .then(([summaryResult, dailyResult]) => {
-        if (controller.signal.aborted) return;
-        setSummary(summaryResult);
-        setDaily(dailyResult.data);
-      })
-      .catch((err: unknown) => {
-        if (controller.signal.aborted) return;
-        setError(
-          err instanceof ApiError
-            ? `${err.message} (${err.code})`
-            : "Could not reach the API. Is the mock running (npm run mock)?",
-        );
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-    return () => controller.abort();
-  }, [propertyId, dateFrom, dateTo, reload]);
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
-  const selectorOptions = properties.length
-    ? properties
-    : ([
-        { id: 1, name: "Buby Lago" },
-        { id: 2, name: "Buby Montagna" },
-      ] as Property[]);
+  function tabIcon(id: AppTab) {
+    if (id === "dashboard") return <IconDashboard size={16} />;
+    if (id === "reputazione") return <IconSparkles size={16} />;
+    if (id === "ricerca") return <IconSearch size={16} />;
+    return <IconInbox size={16} />;
+  }
+
+  const activeTabMeta = TABS.find((t) => t.id === tab)!;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-end justify-between gap-4 px-4 py-5">
-          <div>
-            <h1 className="text-xl font-semibold">Buby Travel — {TABS.find((t) => t.id === tab)?.label}</h1>
-            <p className="text-sm text-slate-500">SAL 1 demo · KPIs from the pinned contract v1</p>
-          </div>
-          <div className="flex flex-wrap items-end gap-3">
-            {/* Dashboard-specific controls: property selector + date range */}
-            {tab === "dashboard" && (
-              <>
-                <label className="flex flex-col gap-1 text-xs font-medium text-slate-500">
-                  Property
-                  <select
-                    className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900"
-                    value={propertyId}
-                    onChange={(event) => setPropertyId(event.target.value)}
-                  >
-                    <option value="">Both</option>
-                    {selectorOptions.map((property) => (
-                      <option key={property.id} value={property.id}>
-                        {property.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="flex flex-col gap-1 text-xs font-medium text-slate-500">
-                  From
-                  <input
-                    type="date"
-                    className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
-                    value={dateFrom}
-                    onChange={(event) => setDateFrom(event.target.value)}
-                  />
-                </label>
-                <label className="flex flex-col gap-1 text-xs font-medium text-slate-500">
-                  To
-                  <input
-                    type="date"
-                    className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
-                    value={dateTo}
-                    onChange={(event) => setDateTo(event.target.value)}
-                  />
-                </label>
-              </>
-            )}
-            {/* chi e' entrato + logout */}
-            <div className="flex items-center gap-3 text-sm">
-              <span className="text-slate-500">
-                {session.email} · {ROLE_LABELS[session.role] ?? session.role}
-              </span>
-              <button
-                type="button"
-                onClick={onLogout}
-                className="rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-100"
-              >
-                Log out
-              </button>
+    <div className="flex min-h-screen flex-col bg-[#F6F5F1] text-slate-900">
+      {/* Top sticky glass header */}
+      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-md">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
+          {/* Brand */}
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-950 text-teal-400 shadow-xs">
+              <IconSparkles size={20} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-base font-extrabold tracking-tight text-slate-950 sm:text-lg">
+                  Buby Travel
+                </h1>
+                <span className="rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-teal-700">
+                  v1.0.0
+                </span>
+              </div>
+              <p className="text-xs text-slate-500">
+                {activeTabMeta.label} · {activeTabMeta.subtitle}
+              </p>
             </div>
           </div>
+
+          {/* Right controls: Command Palette, Disclosures, Session + Logout */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPaletteOpen(true)}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:bg-white"
+            >
+              <IconCommand size={14} className="text-slate-400" />
+              <span className="hidden sm:inline">Comando rapido</span>
+              <kbd className="rounded border border-slate-200 bg-white px-1.5 py-0.5 font-mono text-[10px] text-slate-500">
+                Ctrl K
+              </kbd>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setDisclosuresOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50"
+            >
+              <IconInfo size={14} className="text-teal-600" />
+              <span className="hidden md:inline">Limiti & Disclosure</span>
+            </button>
+
+            <div className="hidden h-5 w-px bg-slate-200 sm:block" />
+
+            <div className="flex items-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50/70 px-3 py-1.5 text-xs">
+              <span className="max-w-[140px] truncate font-medium text-slate-700">
+                {session.email}
+              </span>
+              <span className="rounded-full bg-slate-900 px-2 py-0.5 text-[10px] font-semibold text-white">
+                {ROLE_LABELS[session.role] ?? session.role}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={onLogout}
+              title="Esci"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200"
+            >
+              <IconLogOut size={14} />
+              <span className="hidden sm:inline">Esci</span>
+            </button>
+          </div>
         </div>
 
-        {/* Tab bar */}
-        <div className="mx-auto flex max-w-6xl gap-1 px-4">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setTab(t.id)}
-              className={`border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
-                tab === t.id
-                  ? "border-sky-600 text-sky-600"
-                  : "border-transparent text-slate-500 hover:text-slate-700"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
+        {/* Navigation tabs */}
+        <nav className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 pb-2 sm:px-6" aria-label="Sezioni">
+          {TABS.map((t) => {
+            const active = tab === t.id;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => setTab(t.id)}
+                className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition ${
+                  active
+                    ? "bg-slate-950 text-white shadow-xs"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                }`}
+              >
+                {tabIcon(t.id)}
+                <span>{t.label}</span>
+              </button>
+            );
+          })}
+        </nav>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-6">
-        {/* ── Dashboard ── */}
+      {/* Main Content */}
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6">
         {tab === "dashboard" && (
-          <>
-            {error && (
-              <div className="mb-6 flex items-center justify-between gap-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                <span>{error}</span>
-                <button
-                  type="button"
-                  className="rounded-md border border-red-300 px-3 py-1 font-medium hover:bg-red-100"
-                  onClick={() => setReload((n) => n + 1)}
-                >
-                  Retry
-                </button>
-              </div>
-            )}
-
-            {loading && (
-              <p className="py-16 text-center text-sm text-slate-500">Loading KPIs…</p>
-            )}
-
-            {!loading && summary && (
-              <>
-                <section className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-                  <KpiCard label="Revenue" value={eur.format(summary.revenue)} />
-                  <KpiCard label="Room nights" value={int.format(summary.room_nights)} />
-                  <KpiCard label="ADR" value={eur.format(summary.adr)} />
-                  <KpiCard label="Cancellation rate" value={pct(summary.cancellation_rate)} />
-                  <KpiCard
-                    label="Occupancy (avg)"
-                    value={pct(summary.occupancy_avg)}
-                    hint="assumed capacity"
-                  />
-                  <KpiCard label="RevPAR" value={eur.format(summary.revpar)} hint="assumed capacity" />
-                </section>
-
-                <section className="mt-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-                  <h2 className="mb-4 text-sm font-semibold text-slate-700">
-                    Daily revenue & occupancy
-                  </h2>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <ComposedChart data={daily} margin={{ top: 4, right: 8, bottom: 4, left: 8 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                        <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                        <YAxis
-                          yAxisId="revenue"
-                          tick={{ fontSize: 12 }}
-                          tickFormatter={(value: number) => `€${int.format(value)}`}
-                        />
-                        <YAxis
-                          yAxisId="occupancy"
-                          orientation="right"
-                          domain={[0, 1]}
-                          tick={{ fontSize: 12 }}
-                          tickFormatter={(value: number) => pct(value)}
-                        />
-                        <Tooltip
-                          formatter={(value: number | string, name: string) =>
-                            name === "Revenue" ? eur.format(Number(value)) : pct(Number(value))
-                          }
-                        />
-                        <Legend />
-                        <Area
-                          yAxisId="revenue"
-                          dataKey="revenue"
-                          name="Revenue"
-                          stroke="#0ea5e9"
-                          fill="#e0f2fe"
-                          connectNulls
-                        />
-                        <Line
-                          yAxisId="occupancy"
-                          dataKey="occupancy"
-                          name="Occupancy"
-                          stroke="#f59e0b"
-                          dot={false}
-                          connectNulls
-                        />
-                      </ComposedChart>
-                    </ResponsiveContainer>
-                  </div>
-                </section>
-
-                <p className="mt-3 text-xs text-slate-500">
-                  Il riepilogo conta gli arrivi nel periodo; il grafico giornaliero conta i giorni di
-                  soggiorno: ai bordi dell'intervallo i totali differiscono per progetto.
-                </p>
-              </>
-            )}
-          </>
+          <Dashboard
+            properties={properties}
+            propertyId={propertyId}
+            onChangePropertyId={setPropertyId}
+          />
         )}
 
-        {/* ── Reputazione ── */}
-        {tab === "reputazione" && <Reputazione />}
+        {tab === "reputazione" && (
+          <Reputazione propertyId={propertyId} onChangePropertyId={setPropertyId} />
+        )}
 
-        {/* ── Ricerca ── */}
-        {tab === "ricerca" && <Ricerca />}
+        {tab === "ricerca" && (
+          <Ricerca propertyId={propertyId} onChangePropertyId={setPropertyId} />
+        )}
 
-        {/* ── Inbox ── */}
-        {tab === "inbox" && <Inbox session={session} />}
+        {tab === "inbox" && (
+          <Inbox
+            session={session}
+            propertyId={propertyId}
+            onChangePropertyId={setPropertyId}
+          />
+        )}
       </main>
 
       {/* Disclosures footer — visible on every page (binding per openapi.yaml + docs/api-contract.md) */}
-      <footer className="mx-auto max-w-6xl px-4 pb-8 text-xs leading-relaxed text-slate-500">
-        <p>
-          Occupancy & RevPAR use <strong>assumed capacity</strong> (Buby Lago 190 rooms, Buby
-          Montagna 230 rooms), not measured. The reviews↔bookings link is{" "}
-          <strong>asserted</strong> at property level, not factual; reputation KPIs come only from
-          reviews. Guest-request emails are <strong>synthetic</strong>; the properties are fictional
-          (1:1 map of the CSV's two hotel types).
-        </p>
+      <footer className="border-t border-slate-200/80 bg-white/70">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 text-[11px] leading-relaxed text-slate-500 sm:px-6">
+          <p>
+            Occupancy &amp; RevPAR usano <strong>capacità assunta</strong> (Buby Lago 190 camere,
+            Buby Montagna 230 camere), non misurata. Il legame recensioni↔prenotazioni è{" "}
+            <strong>asserito</strong> a livello di proprietà (corpus 2012 vs prenotazioni
+            2015–2017, zero overlap). Le email degli ospiti sono <strong>sintetiche</strong> e le
+            due strutture sono fittizie.
+          </p>
+          <button
+            type="button"
+            onClick={() => setDisclosuresOpen(true)}
+            className="shrink-0 font-semibold text-teal-700 hover:underline"
+          >
+            Dettagli contratto v1 →
+          </button>
+        </div>
       </footer>
+
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        onNavigate={setTab}
+        onSelectProperty={setPropertyId}
+        onOpenDisclosures={() => setDisclosuresOpen(true)}
+      />
+
+      <DisclosuresModal
+        open={disclosuresOpen}
+        onClose={() => setDisclosuresOpen(false)}
+      />
     </div>
   );
 }

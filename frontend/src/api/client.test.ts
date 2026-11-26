@@ -380,4 +380,49 @@ describe("D13 / D19 / D20 api client functions", () => {
       code: "forbidden",
     });
   });
+
+  it("getKpiChannels — unwraps {data} envelope and forwards property/date filters", async () => {
+    const channels = [
+      { market_segment: "Online TA", bookings: 34910, revenue: 12680450.2, share: 0.5651 },
+      { market_segment: "Direct", bookings: 8560, revenue: 3120340.1, share: 0.1386 },
+    ];
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(loginBody))
+      .mockResolvedValueOnce(jsonResponse({ data: channels }));
+    vi.stubGlobal("fetch", fetchMock);
+    const { login, getKpiChannels } = await freshClient();
+
+    await login("manager@buby.travel", "demo");
+    const result = await getKpiChannels({
+      property_id: 1,
+      date_from: "2016-01-01",
+      date_to: "2016-12-31",
+    });
+
+    expect(result).toEqual(channels);
+    const url: string = fetchMock.mock.calls[1][0];
+    expect(url).toBe(
+      "http://localhost:8000/api/kpis/channels?property_id=1&date_from=2016-01-01&date_to=2016-12-31",
+    );
+  });
+
+  it("getKpiSeasonality — unwraps {data} envelope and handles null property_id", async () => {
+    const seasonality = [
+      { month: 1, avg_adr: 72.4, avg_occupancy: 0.412, avg_revenue: 6264.05 },
+      { month: 8, avg_adr: 141.2, avg_occupancy: 0.834, avg_revenue: 24729.77 },
+    ];
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(loginBody))
+      .mockResolvedValueOnce(jsonResponse({ data: seasonality }));
+    vi.stubGlobal("fetch", fetchMock);
+    const { login, getKpiSeasonality } = await freshClient();
+
+    await login("manager@buby.travel", "demo");
+    const result = await getKpiSeasonality({ property_id: null });
+
+    expect(result).toEqual(seasonality);
+    expect(fetchMock.mock.calls[1][0]).toBe("http://localhost:8000/api/kpis/seasonality");
+  });
 });

@@ -1,6 +1,7 @@
 import type {
   ApiErrorBody,
   Booking,
+  ChannelMixItem,
   DataEnvelope,
   GuestRequest,
   GuestRequestUpdate,
@@ -11,6 +12,7 @@ import type {
   Property,
   Review,
   ReviewSummary,
+  SeasonalityPoint,
 } from "./types";
 
 const BASE_URL: string =
@@ -104,6 +106,24 @@ export function getKpiSummary(params: KpiQuery): Promise<KpiSummary> {
 
 export function getKpiDaily(params: KpiQuery): Promise<Page<KpiDailyPoint>> {
   return request<Page<KpiDailyPoint>>(`/api/kpis/daily${queryString(params)}`);
+}
+
+// /api/kpis/channels — returns { data: ChannelMixItem[] }
+export async function getKpiChannels(params: KpiQuery): Promise<ChannelMixItem[]> {
+  const envelope = await request<DataEnvelope<ChannelMixItem[]>>(
+    `/api/kpis/channels${queryString(params)}`,
+  );
+  return envelope.data;
+}
+
+// /api/kpis/seasonality — property_id only, returns { data: SeasonalityPoint[] }
+export async function getKpiSeasonality(params: {
+  property_id?: number | null;
+}): Promise<SeasonalityPoint[]> {
+  const envelope = await request<DataEnvelope<SeasonalityPoint[]>>(
+    `/api/kpis/seasonality${queryString(params)}`,
+  );
+  return envelope.data;
 }
 
 // /api/reviews/summary — property_id only; response is the ReviewSummary directly (no envelope)
